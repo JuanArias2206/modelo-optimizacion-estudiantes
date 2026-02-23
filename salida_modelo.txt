@@ -1,0 +1,98 @@
+Welcome to the CBC MILP Solver 
+Version: 2.10.3 
+Build Date: Dec 15 2019 
+
+command line - /opt/anaconda3/lib/python3.13/site-packages/pulp/apis/../solverdir/cbc/osx/i64/cbc /var/folders/j2/jcmlyj6n5nl81k9_n6y7kkdm0000gn/T/bb2e440c1641402f8f7094e1d794d36e-pulp.mps -max -timeMode elapsed -branch -printingOptions all -solution /var/folders/j2/jcmlyj6n5nl81k9_n6y7kkdm0000gn/T/bb2e440c1641402f8f7094e1d794d36e-pulp.sol (default strategy 1)
+At line 2 NAME          MODEL
+At line 3 ROWS
+At line 13 COLUMNS
+At line 64 RHS
+At line 73 BOUNDS
+At line 84 ENDATA
+Problem MODEL has 8 rows, 10 columns and 20 elements
+Coin0008I MODEL read with 0 errors
+Option for timeMode changed from cpu to elapsed
+Problem is infeasible - 0.00 seconds
+Option for printingOptions changed from normal to all
+Total time (CPU seconds):       0.00   (Wallclock seconds):       0.00
+
+================================================================================
+MODELO DE OPTIMIZACIÓN DE ASIGNACIÓN DE ESTUDIANTES A ESCENARIOS
+================================================================================
+
+Cargando datos desde: data/Plantilla_V3_FacSalud.xlsx
+Set de ponderaciones: SET001
+Semestre: 2026-1
+
+✓ 01_Oferta: 32 instituciones
+✓ 03_Calidad: 32 registros
+✓ 02_Oferta_x_Programa: 32 cupos
+✓ 04_Costo_del_Sitio: 73 registros de costo
+✓ 05_Ponderaciones: 10 criterios
+
+=== NOTA: Demanda usada es PLACEHOLDER ===
+Próximo paso: agregar hoja 'Demanda Pregrado/Posgrado' al Excel
+
+Grupos de demanda:
+  Semestre  Programa  ...          Tipo_Practica Demanda_Estudiantes
+0   2026-1  Medicina  ...      Rotación pregrado                  40
+1   2026-1  Medicina  ...  Internado de medicina                  25
+2   2026-1  Medicina  ...    Residencia Medicina                  15
+
+[3 rows x 5 columns]
+
+=== PONDERACIONES Y PESOS ===
+Criterios para Set_ID=SET001: 10
+Criterios activos: 10
+Criterios para semestre 2026-1: 10
+
+Criterios cargados:
+  - Acceso_Transporte_Publico: peso=0.10, tipo=Beneficio
+  - MisionVisionProposito_AlineacionDocencia: peso=0.10, tipo=Beneficio
+  - Evalua_Estudiantes_Profesores: peso=0.10, tipo=Beneficio
+  - Vinculacion_Planta_Especialistas_%: peso=0.10, tipo=Beneficio
+  - Servicios_UCI_UCIN: peso=0.10, tipo=Beneficio
+  - Servicios_Pediatricos: peso=0.10, tipo=Beneficio
+  - Servicios_Obstetricia: peso=0.10, tipo=Beneficio
+  - %_Contraprestacion_Matricula: peso=0.10, tipo=Costo
+  - Cobro_EPP: peso=0.10, tipo=Costo
+  - Nro_Universidades_Comparten: peso=0.10, tipo=Costo
+
+Suma de pesos: 1.0000
+✓ Pesos validados (suma = 1.0000)
+
+=== VALIDACIÓN DE DATOS ===
+
+Registros de cupo con datos: 0 / 32
+Registros de costo con datos: 73 / 73
+
+⚠ PLANTILLA VACÍA: Generando datos de EJEMPLO para demostración...
+
+✓ Cupos generados: 5 registros
+✓ Costos generados: 10 registros
+
+NOTA: Los datos de ejemplo se usan SOLO para esta demostración.
+      En producción, llena 02_Oferta_x_Programa y 04_Costo_del_Sitio
+
+=== CÁLCULO DE SCORES ===
+Pares (j,g) factibles: 10
+Pares (j,g) con costo asignado: 10
+Pares (j,g) para optimizar: 10
+
+=== OPTIMIZACIÓN ===
+
+=== RESULTADOS ===
+Estado: -1
+Valor óptimo: 35.0500
+
+Asignaciones realizadas:
+ID_Institucion Programa Tipo_Estudiante         Tipo_Practica Semestre  Asignados  Score_unitario
+     500102104 Medicina        Pregrado Internado de medicina   2026-1         15            0.57
+    7600102541 Medicina        Pregrado Internado de medicina   2026-1         20            0.47
+    7600103359 Medicina        Pregrado     Rotación pregrado   2026-1         25            0.57
+    7600103715 Medicina        Pregrado     Rotación pregrado   2026-1         15            0.57
+
+Resumen por grupo:
+Programa Tipo_Estudiante         Tipo_Practica  Asignados
+Medicina        Pregrado Internado de medicina         35
+Medicina        Pregrado     Rotación pregrado         40
