@@ -1,418 +1,515 @@
-"""Lógica central del modelo de optimización (único punto de ajuste del modelo)."""
-
-from __future__ import annotations
-
-from typing import Callable, Dict, Optional
-
-import numpy as np
 import pandas as pd
+import numpy as np
+from pulp import LpProblem, LpVariable, LpMaximize, lpSum, LpInteger, PULP_CBC_CMD
 
-from src.core import Optimizer, ScoreCalculator
+print("=" * 80)
+print("MODELO DE OPTIMIZACIÓN DE ASIGNACIÓN DE ESTUDIANTES A ESCENARIOS")
+print("=" * 80)
+print()
 
+# -----------------------
+# 1) Cargar datos
+# -----------------------
+PATH_XLSX = "data/Plantilla_V3_FacSalud.xlsx"
+SET_ID = "SET001"
+SEMESTRE = "2026-1"
 
-CRITERIA_REQUIRED_NORM_COLUMNS = {
-    "Acceso_Transporte_Publico": "Acceso_Transporte_Publico_norm",
-    "MisionVisionProposito_AlineacionDocencia": "MisionVisionProposito_AlineacionDocencia_norm",
-    "Evalua_Estudiantes_Profesores": "Evalua_Estudiantes_Profesores_norm",
-    "Vinculacion_Planta_Especialistas_%": "Vinculacion_Planta_Especialistas_%_norm",
-    "Servicios_Pediatricos": "Servicios_Pediatricos_norm",
-    "Servicios_Obstetricia": "Servicios_Obstetricia_norm",
-    "Nro_Universidades_Comparten": "Nro_Universidades_Comparten_norm",
-    "Es_Hospital_Universitario": "Es_Hospital_Universitario_norm",
-    "Escenario_Avalado_Practicas": "Escenario_Avalado_Practicas_norm",
-    "Admiten_Docentes_Externos": "Admiten_Docentes_Externos_norm",
-    "Areas_Bienestar": "Areas_Bienestar_norm",
-    "Areas_Academicas": "Areas_Academicas_norm",
+print(f"Cargando datos desde: {PATH_XLSX}")
+print(f"Set de ponderaciones: {SET_ID}")
+print(f"Semestre: {SEMESTRE}")
+print()
+
+try:
+    oferta   = pd.read_excel(PATH_XLSX, sheet_name="01_Oferta")
+    calidad  = pd.read_excel(PATH_XLSX, sheet_name="03_Calidad")
+    cupos    = pd.read_excel(PATH_XLSX, sheet_name="02_Oferta_x_Programa")
+    costos   = pd.read_excel(PATH_XLSX, sheet_name="04_Costo_del_Sitio")
+    
+    # OJO: si tu hoja 05_Ponderaciones tiene panel arriba (4 filas),
+    # el header real está en la fila 5 -> header=4 (indexado desde 0)
+    pond = pd.read_excel(PATH_XLSX, sheet_name="05_Ponderaciones", header=4)
+    
+    print(f"✓ 01_Oferta: {oferta.shape[0]} instituciones")
+    print(f"✓ 03_Calidad: {calidad.shape[0]} registros")
+    print(f"✓ 02_Oferta_x_Programa: {cupos.shape[0]} cupos")
+    print(f"✓ 04_Costo_del_Sitio: {costos.shape[0]} registros de costo")
+    print(f"✓ 05_Ponderaciones: {pond.shape[0]} criterios")
+    print()
+except Exception as e:
+    print(f"ERROR al cargar Excel: {e}")
+    raise
+
+# -----------------------
+# 2) Construir DEMANDA (ejemplo placeholder)
+# -----------------------
+# IMPORTANTE: En tu caso esto debe salir de "Demanda Pregrado/Posgrado"
+# Por ahora usaremos datos hardcodeados. Cuando tengas la hoja de demanda, 
+# aquí harás un pd.read_excel() para cargar desde Excel
+
+print("=== NOTA: Demanda usada es PLACEHOLDER ===")
+print("Próximo paso: agregar hoja 'Demanda Pregrado/Posgrado' al Excel")
+print()
+
+demanda = pd.DataFrame([
+    {"Semestre": "2026-1", "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Tipo_Practica": "Rotación pregrado", "Demanda_Estudiantes": 40},
+    {"Semestre": "2026-1", "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Tipo_Practica": "Internado de medicina", "Demanda_Estudiantes": 25},
+    {"Semestre": "2026-1", "Programa": "Medicina", "Tipo_Estudiante": "Posgrado", "Tipo_Practica": "Residencia Medicina", "Demanda_Estudiantes": 15},
+])
+
+print("Grupos de demanda:")
+print(demanda)
+print()
+
+# -----------------------
+# 3) Pesos: filtrar Set_ID, semestre y activos
+# -----------------------
+print("=== PONDERACIONES Y PESOS ===")
+
+pond = pond[pond["Set_ID"].astype(str).str.strip() == SET_ID].copy()
+print(f"Criterios para Set_ID={SET_ID}: {len(pond)}")
+
+pond = pond[pond["Activo (0/1)"].fillna(0).astype(int) == 1].copy()
+print(f"Criterios activos: {len(pond)}")
+
+pond = pond[pond["Semestre_Vigencia (AAAA-S)"].astype(str).str.strip() == SEMESTRE].copy()
+print(f"Criterios para semestre {SEMESTRE}: {len(pond)}")
+print()
+
+# Si Peso está vacío -> 0
+pond["Peso (0-1)"] = pd.to_numeric(pond["Peso (0-1)"], errors="coerce").fillna(0.0)
+
+peso_sum = pond["Peso (0-1)"].sum()
+print("Criterios cargados:")
+for _, r in pond.iterrows():
+    print(f"  - {r['Criterio_Codigo']}: peso={r['Peso (0-1)']:.2f}, tipo={r['Tipo (Beneficio/Costo)']}")
+print(f"\nSuma de pesos: {peso_sum:.4f}")
+
+if abs(peso_sum - 1.0) > 1e-6:
+    raise ValueError(f"Los pesos activos del Set_ID={SET_ID} para {SEMESTRE} deben sumar 1.0. Actualmente suman {peso_sum:.4f}")
+
+weights = dict(zip(pond["Criterio_Codigo"], pond["Peso (0-1)"]))
+crit_type = dict(zip(pond["Criterio_Codigo"], pond["Tipo (Beneficio/Costo)"]))
+
+print(f"✓ Pesos validados (suma = {peso_sum:.4f})")
+print()
+
+# -----------------------
+# 4) Armar tabla base de criterios por IPS
+# -----------------------
+# Merge Oferta + Calidad
+base = oferta.merge(calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
+
+# Selección de columnas que existen en las hojas reales
+# (verificar nombres exactos con inspect anterior)
+crit_cols = [
+    "ID_Institucion",
+    "Acceso_Transporte_Publico (1-5)",
+    "MisionVisionProposito_AlineacionDocencia (1-5)",
+    "Evalua_Estudiantes_Profesores (0-5)",
+    "Vinculacion_Planta_Especialistas_%",
+    "Servicios_UCI (0/1)",           # UCI separado
+    "Servicios_UCIN (0/1)",          # UCIN separado
+    "Servicios_Pediatricos (0/1)",
+    "Servicios_Obstetricia (0/1)",
+    "Nro_Universidades_Comparten",
+]
+
+# Renombrar a los códigos de criterios usados en 05_Ponderaciones
+rename_map = {
+    "Acceso_Transporte_Publico (1-5)": "Acceso_Transporte_Publico",
+    "MisionVisionProposito_AlineacionDocencia (1-5)": "MisionVisionProposito_AlineacionDocencia",
+    "Evalua_Estudiantes_Profesores (0-5)": "Evalua_Estudiantes_Profesores",
+    "Vinculacion_Planta_Especialistas_%": "Vinculacion_Planta_Especialistas_%",
+    "Servicios_UCI (0/1)": "Servicios_UCI",
+    "Servicios_UCIN (0/1)": "Servicios_UCIN",
+    "Servicios_Pediatricos (0/1)": "Servicios_Pediatricos",
+    "Servicios_Obstetricia (0/1)": "Servicios_Obstetricia",
+    "Nro_Universidades_Comparten": "Nro_Universidades_Comparten",
 }
+base = base[crit_cols].rename(columns=rename_map)
 
+# -----------------------
+# 5) Funciones de normalización
+# -----------------------
+def norm_1_5(x):  # 1..5 -> 0..1
+    return (x - 1.0) / 4.0
 
-def _notify(status_callback: Optional[Callable[[str], None]], message: str) -> None:
-    if status_callback:
-        status_callback(message)
+def norm_0_5(x):  # 0..5 -> 0..1
+    return x / 5.0
 
+def norm_pct(x):  # 0..100 -> 0..1
+    return x / 100.0
 
-def generate_ejemplo_demanda(
-    semestre: str,
-    total_estudiantes: int,
-    programa: str,
-    tipo_estudiante: str,
-    tipo_practica: str,
-) -> pd.DataFrame:
-    return pd.DataFrame(
-        [
-            {
-                "Semestre": semestre,
-                "Programa": programa,
-                "Tipo_Estudiante": tipo_estudiante,
-                "Tipo_Practica": tipo_practica,
-                "Demanda_Estudiantes": int(total_estudiantes),
-            }
-        ]
-    )
+def minmax_cost(series):
+    # costo: menor es mejor
+    mn, mx = series.min(), series.max()
+    if pd.isna(mn) or pd.isna(mx) or abs(mx - mn) < 1e-9:
+        return pd.Series([1.0] * len(series), index=series.index)  # si todo igual, no discrimina
+    return (mx - series) / (mx - mn)
 
+def minmax_benefit(series):
+    mn, mx = series.min(), series.max()
+    if pd.isna(mn) or pd.isna(mx) or abs(mx - mn) < 1e-9:
+        return pd.Series([1.0] * len(series), index=series.index)
+    return (series - mn) / (mx - mn)
 
-def generate_ejemplo_cupos(semestre: str) -> pd.DataFrame:
+# -----------------------
+# 6) Preparar COSTOS por combinación (j,g)
+# -----------------------
+# Normalizar valores del costo: Cobro_EPP a 0/1
+# (Si no se hizo en la sección anterior, hacerlo ahora)
+costos = costos.copy()
+if "Cobro_EPP_num" not in costos.columns:
+    costos["Cobro_EPP_num"] = costos["Cobro_EPP (No cobra/Cobra a la Universidad)"].map({
+        "No cobra EPP": 0,
+        "Cobra EPP a la Universidad": 1,
+    }).fillna(0)
+if "pct_contra" not in costos.columns:
+    costos["pct_contra"] = pd.to_numeric(costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce")
+
+# Función de lookup con fallback (Programa_Costo=Todos)
+def lookup_costo(id_inst, prog, tipo_est, tipo_pract, semestre):
+    # Convertir todo a string para comparación consistente
+    id_inst = str(id_inst)
+    prog = str(prog)
+    tipo_est = str(tipo_est)
+    tipo_pract = str(tipo_pract)
+    semestre = str(semestre)
+    
+    # Convertir ID_Institucion en costos a string para comparación
+    df = costos[
+        (costos["ID_Institucion"].astype(str) == id_inst) &
+        (costos["Tipo_Estudiante_Costo"].astype(str) == tipo_est) &
+        (costos["Tipo_Practica_Costo"].astype(str) == tipo_pract) &
+        (costos["Semestre_Vigencia (AAAA-S)"].astype(str) == semestre)
+    ]
+    df1 = df[df["Programa_Costo"].astype(str) == prog]
+    if len(df1) > 0:
+        row = df1.iloc[0]
+        return row["pct_contra"], row["Cobro_EPP_num"]
+    df2 = df[df["Programa_Costo"].astype(str) == "Todos"]
+    if len(df2) > 0:
+        row = df2.iloc[0]
+        return row["pct_contra"], row["Cobro_EPP_num"]
+    return np.nan, np.nan  # sin dato -> luego decides si penalizas o lo haces no factible
+
+print("=== VALIDACIÓN DE DATOS ===")
+print()
+
+# Validar cupos
+cupos["Cupo_Estimado_Semestral"] = pd.to_numeric(cupos["Cupo_Estimado_Semestral"], errors="coerce").fillna(0).astype(int)
+cupos_lleños = cupos[cupos["Cupo_Estimado_Semestral"] > 0]
+print(f"Registros de cupo con datos: {len(cupos_lleños)} / {len(cupos)}")
+
+# Validar costos
+costos["pct_contra"] = pd.to_numeric(costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce")
+costos_llenos = costos[costos["pct_contra"].notna()]
+print(f"Registros de costo con datos: {len(costos_llenos)} / {len(costos)}")
+print()
+
+# Si no hay datos suficientes, generar datos de ejemplo
+if len(cupos_lleños) == 0 or len(costos_llenos) == 0:
+    print("⚠ PLANTILLA VACÍA: Generando datos de EJEMPLO para demostración...")
+    print()
+    
+    # Generar cupos de ejemplo
     inst_ids = [7600103715, 500102104, 7600102541, 7600103359, 7600108077]
-    rows = []
+    cupos_ejemplo = []
     for inst in inst_ids:
-        rows.append(
-            {
-                "ID_Institucion": inst,
-                "Programa": "Medicina",
-                "Tipo_Estudiante (Pregrado/Posgrado)": "Pregrado",
-                "Semestre (AAAA-S)": semestre,
-                "Cupo_Estimado_Semestral": 15,
-            }
-        )
-    return pd.DataFrame(rows)
-
-
-def generate_ejemplo_costos(semestre: str) -> pd.DataFrame:
-    inst_ids = [7600103715, 500102104, 7600102541, 7600103359, 7600108077]
-    rows = []
+        cupos_ejemplo.append({
+            "ID_Institucion": inst,
+            "Programa": "Medicina",
+            "Tipo_Estudiante (Pregrado/Posgrado)": "Pregrado",
+            "Semestre (AAAA-S)": "2026-1",
+            "Cupo_Estimado_Semestral": 15
+        })
+    cupos = pd.DataFrame(cupos_ejemplo)
+    print(f"✓ Cupos generados: {len(cupos)} registros")
+    
+    # Generar costos de ejemplo
+    costos_ejemplo = []
     for inst in inst_ids:
         for tipo_pract in ["Rotación pregrado", "Internado de medicina"]:
-            rows.append(
-                {
-                    "ID_Institucion": inst,
-                    "Programa_Costo": "Medicina",
-                    "Tipo_Estudiante_Costo": "Pregrado",
-                    "Tipo_Practica_Costo": tipo_pract,
-                    "Semestre_Vigencia (AAAA-S)": semestre,
-                    "%_Contraprestacion_Matricula (0-100)": 30.0,
-                    "Cobro_EPP (No cobra/Cobra a la Universidad)": "No cobra EPP",
-                }
-            )
-    return pd.DataFrame(rows)
+            costos_ejemplo.append({
+                "ID_Institucion": inst,
+                "Programa_Costo": "Medicina",
+                "Tipo_Estudiante_Costo": "Pregrado",
+                "Tipo_Practica_Costo": tipo_pract,
+                "Semestre_Vigencia (AAAA-S)": "2026-1",
+                "%_Contraprestacion_Matricula (0-100)": 30.0,
+                "Cobro_EPP (No cobra/Cobra a la Universidad)": "No cobra EPP",
+            })
+    costos = pd.DataFrame(costos_ejemplo)
+    costos["Cobro_EPP_num"] = 0
+    costos["pct_contra"] = costos["%_Contraprestacion_Matricula (0-100)"]
+    print(f"✓ Costos generados: {len(costos)} registros")
+    print()
+    print("NOTA: Los datos de ejemplo se usan SOLO para esta demostración.")
+    print("      En producción, llena 02_Oferta_x_Programa y 04_Costo_del_Sitio")
+    print()
+else:
+    print("✓ Datos reales encontrados en el Excel")
+    print()
+    
+    # Normalizar valores del costo si no lo hicimos ya
+    costos = costos.copy()
+    costos["Cobro_EPP_num"] = costos["Cobro_EPP (No cobra/Cobra a la Universidad)"].map({
+        "No cobra EPP": 0,
+        "Cobra EPP a la Universidad": 1,
+    }).fillna(0)
+    costos["pct_contra"] = pd.to_numeric(costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce")
 
+# -----------------------
+# 7) Construir grupos G y pares factibles (j,g)
+# -----------------------
+# Cupos (capacidad) -> key (j, prog, tipo_est, semestre)
+if "Cupo_Estimado_Semestral" not in cupos.columns:
+    cupos["Cupo_Estimado_Semestral"] = 0
+cupos["Cupo_Estimado_Semestral"] = pd.to_numeric(cupos["Cupo_Estimado_Semestral"], errors="coerce").fillna(0).astype(int)
 
-def _normalize_weight_key(raw_key: str) -> str:
-    key = str(raw_key).strip()
-    if "(" in key and key.endswith(")"):
-        key = key[: key.rfind("(")].strip()
-    return key
+cap_dict = {}
+for _, r in cupos.iterrows():
+    inst_id = str(r["ID_Institucion"])  # Convertir a string para consistencia
+    prog = str(r["Programa"]) if pd.notna(r["Programa"]) else None
+    tipo_est = str(r["Tipo_Estudiante (Pregrado/Posgrado)"]) if pd.notna(r["Tipo_Estudiante (Pregrado/Posgrado)"]) else None
+    sem = str(r["Semestre (AAAA-S)"]) if pd.notna(r["Semestre (AAAA-S)"]) else None
+    
+    if all([prog, tipo_est, sem]):
+        cap_dict[(inst_id, prog, tipo_est, sem)] = int(r["Cupo_Estimado_Semestral"])
 
+# Demanda -> lista de grupos
+demanda = demanda[demanda["Semestre"] == SEMESTRE].copy()
+demanda["Demanda_Estudiantes"] = pd.to_numeric(demanda["Demanda_Estudiantes"], errors="coerce").fillna(0).astype(int)
 
-def _has_column(df: pd.DataFrame, col: str) -> bool:
-    return col in df.columns
+groups = []
+for _, g in demanda.iterrows():
+    groups.append((g["Programa"], g["Tipo_Estudiante"], g["Tipo_Practica"], g["Semestre"]))
 
+demand_dict = { (g["Programa"], g["Tipo_Estudiante"], g["Tipo_Practica"], g["Semestre"]): int(g["Demanda_Estudiantes"])
+                for _, g in demanda.iterrows() }
 
-def _require_columns(df: pd.DataFrame, cols: list[str], sheet_name: str) -> None:
-    missing = [col for col in cols if col not in df.columns]
-    if missing:
-        raise ValueError(f"En {sheet_name} faltan columnas requeridas: {missing}")
+instituciones = base["ID_Institucion"].dropna().unique().tolist()
+# Convertir instituciones a string para consistencia
+instituciones = [str(j) for j in instituciones]
 
+# Feasibility: existe cupo (j,prog,tipo_est,semestre) > 0
+feasible = {}
+for j in instituciones:
+    for (p, n, t, s) in groups:
+        cap = cap_dict.get((j, p, n, s), 0)
+        feasible[(j, (p,n,t,s))] = (cap > 0)
 
-def _lookup_costo(
-    costos: pd.DataFrame,
-    id_inst: str,
-    prog: str,
-    tipo_est: str,
-    tipo_pract: str,
-    semestre: str,
-) -> tuple[float, float]:
-    c = costos.copy()
-    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-    if _has_column(c, "Tipo_Estudiante_Costo"):
-        c["Tipo_Estudiante_Costo"] = c["Tipo_Estudiante_Costo"].astype(str)
-    if _has_column(c, "Tipo_Practica_Costo"):
-        c["Tipo_Practica_Costo"] = c["Tipo_Practica_Costo"].astype(str)
-    if _has_column(c, "Semestre_Vigencia (AAAA-S)"):
-        c["Semestre_Vigencia (AAAA-S)"] = c["Semestre_Vigencia (AAAA-S)"].astype(str)
-    if _has_column(c, "Programa_Costo"):
-        c["Programa_Costo"] = c["Programa_Costo"].astype(str)
+# -----------------------
+# 8) Calcular V_{j,g}
+# -----------------------
+# Primero normalizar criterios "base" por IPS
+S = base.set_index("ID_Institucion").copy()
+# Convertir índice a string para consistencia
+S.index = S.index.astype(str)
 
-    strict = c[c["ID_Institucion"] == str(id_inst)]
-    if _has_column(c, "Tipo_Estudiante_Costo"):
-        strict = strict[strict["Tipo_Estudiante_Costo"] == str(tipo_est)]
-    if _has_column(c, "Tipo_Practica_Costo"):
-        strict = strict[strict["Tipo_Practica_Costo"] == str(tipo_pract)]
-    if _has_column(c, "Semestre_Vigencia (AAAA-S)"):
-        strict = strict[strict["Semestre_Vigencia (AAAA-S)"] == str(semestre)]
+# Normalizaciones por tipo
+# (ajusta si cambias códigos/columnas)
+if "Acceso_Transporte_Publico" in S:
+    S["Acceso_Transporte_Publico_norm"] = norm_1_5(pd.to_numeric(S["Acceso_Transporte_Publico"], errors="coerce"))
+if "MisionVisionProposito_AlineacionDocencia" in S:
+    S["MisionVisionProposito_AlineacionDocencia_norm"] = norm_1_5(pd.to_numeric(S["MisionVisionProposito_AlineacionDocencia"], errors="coerce"))
+if "Evalua_Estudiantes_Profesores" in S:
+    S["Evalua_Estudiantes_Profesores_norm"] = norm_0_5(pd.to_numeric(S["Evalua_Estudiantes_Profesores"], errors="coerce"))
+if "Vinculacion_Planta_Especialistas_%" in S:
+    S["Vinculacion_Planta_Especialistas_%_norm"] = norm_pct(pd.to_numeric(S["Vinculacion_Planta_Especialistas_%"], errors="coerce"))
 
-    strict_prog = strict[strict["Programa_Costo"] == str(prog)] if _has_column(c, "Programa_Costo") else strict
-    if not strict_prog.empty:
-        row = strict_prog.iloc[0]
-        return float(row["pct_contra"]), float(row["Cobro_EPP_num"])
+# Servicios_UCI_UCIN: combina UCI + UCIN con lógica OR (si tiene uno u otro, vale 1)
+if "Servicios_UCI" in S and "Servicios_UCIN" in S:
+    uci = pd.to_numeric(S["Servicios_UCI"], errors="coerce").fillna(0).astype(int)
+    ucin = pd.to_numeric(S["Servicios_UCIN"], errors="coerce").fillna(0).astype(int)
+    S["Servicios_UCI_UCIN_norm"] = np.maximum(uci, ucin).clip(0, 1).astype(float)
 
-    strict_todos = strict[strict["Programa_Costo"] == "Todos"] if _has_column(c, "Programa_Costo") else pd.DataFrame()
-    if not strict_todos.empty:
-        row = strict_todos.iloc[0]
-        return float(row["pct_contra"]), float(row["Cobro_EPP_num"])
+# Otros servicios binarios
+for b in ["Servicios_Pediatricos","Servicios_Obstetricia"]:
+    if b in S:
+        S[f"{b}_norm"] = pd.to_numeric(S[b], errors="coerce").fillna(0).clip(0,1)
 
-    semi = c[c["ID_Institucion"] == str(id_inst)]
-    if _has_column(c, "Tipo_Estudiante_Costo"):
-        semi = semi[semi["Tipo_Estudiante_Costo"] == str(tipo_est)]
-    if _has_column(c, "Semestre_Vigencia (AAAA-S)"):
-        semi = semi[semi["Semestre_Vigencia (AAAA-S)"] == str(semestre)]
+# Nro_Universidades_Comparten es COSTO: normalizar como penalidad
+if "Nro_Universidades_Comparten" in S:
+    S["Nro_Universidades_Comparten_norm"] = minmax_cost(pd.to_numeric(S["Nro_Universidades_Comparten"], errors="coerce").fillna(0))
 
-    semi_prog = semi[semi["Programa_Costo"] == str(prog)] if _has_column(c, "Programa_Costo") else semi
-    if not semi_prog.empty:
-        row = semi_prog.iloc[0]
-        return float(row["pct_contra"]), float(row["Cobro_EPP_num"])
-
-    semi_todos = semi[semi["Programa_Costo"] == "Todos"] if _has_column(c, "Programa_Costo") else pd.DataFrame()
-    if not semi_todos.empty:
-        row = semi_todos.iloc[0]
-        return float(row["pct_contra"]), float(row["Cobro_EPP_num"])
-
-    by_inst = c[c["ID_Institucion"] == str(id_inst)]
-    if not by_inst.empty:
-        row = by_inst.iloc[0]
-        pct = row["pct_contra"] if pd.notna(row["pct_contra"]) else 50.0
-        epp = row["Cobro_EPP_num"] if pd.notna(row["Cobro_EPP_num"]) else 0
-        return float(pct), float(epp)
-
-    return 50.0, 0.0
-
-
-def ejecutar_modelo(
-    loader,
-    semestre: str,
-    total_estudiantes: int,
-    programa_manual: str,
-    tipo_est_manual: str,
-    tipo_practica_manual: str,
-    status_callback: Optional[Callable[[str], None]] = None,
-) -> Dict:
-    loader.validate_pesas()
-    weights, _ = loader.get_ponderaciones_dict()
-    _notify(status_callback, f"✓ {len(weights)} criterios cargados")
-
-    _require_columns(loader.oferta, ["ID_Institucion"], "01_Oferta")
-    _require_columns(loader.calidad, ["ID_Institucion"], "03_Calidad")
-    _require_columns(loader.cupos, ["ID_Institucion", "Cupo_Estimado_Semestral"], "02_Oferta_x_Programa")
-    _require_columns(
-        loader.costos,
-        ["ID_Institucion", "%_Contraprestacion_Matricula (0-100)", "Cobro_EPP (No cobra/Cobra a la Universidad)"],
-        "04_Costo_del_Sitio",
-    )
-
-    loader.cupos["Cupo_Estimado_Semestral"] = pd.to_numeric(
-        loader.cupos["Cupo_Estimado_Semestral"], errors="coerce"
-    ).fillna(0).astype(int)
-
-    if (loader.cupos["Cupo_Estimado_Semestral"] > 0).sum() == 0:
-        _notify(status_callback, "⚠️ Plantilla sin cupos reales - usando datos de EJEMPLO")
-        loader.cupos = generate_ejemplo_cupos(semestre)
-        loader.costos = generate_ejemplo_costos(semestre)
-
-    loader.costos = loader.costos.copy()
-    loader.costos["Cobro_EPP_num"] = loader.costos[
-        "Cobro_EPP (No cobra/Cobra a la Universidad)"
-    ].map({"No cobra EPP": 0, "Cobra EPP a la Universidad": 1}).fillna(0)
-    loader.costos["pct_contra"] = pd.to_numeric(
-        loader.costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce"
-    )
-
-    if loader.demanda is not None and not loader.demanda.empty and "Semestre" in loader.demanda.columns:
-        demanda = loader.demanda[loader.demanda["Semestre"].astype(str) == str(semestre)].copy()
-    else:
-        demanda = generate_ejemplo_demanda(
-            semestre=semestre,
-            total_estudiantes=total_estudiantes,
-            programa=programa_manual,
-            tipo_estudiante=tipo_est_manual,
-            tipo_practica=tipo_practica_manual,
-        )
-
-    if demanda.empty:
-        demanda = generate_ejemplo_demanda(
-            semestre=semestre,
-            total_estudiantes=total_estudiantes,
-            programa=programa_manual,
-            tipo_estudiante=tipo_est_manual,
-            tipo_practica=tipo_practica_manual,
-        )
-
-    demanda["Demanda_Estudiantes"] = pd.to_numeric(
-        demanda["Demanda_Estudiantes"], errors="coerce"
-    ).fillna(0).astype(int)
-
-    groups = [
-        (g["Programa"], g["Tipo_Estudiante"], g["Tipo_Practica"], g["Semestre"])
-        for _, g in demanda.iterrows()
-    ]
-    demand_dict = {
-        (g["Programa"], g["Tipo_Estudiante"], g["Tipo_Practica"], g["Semestre"]): int(g["Demanda_Estudiantes"])
-        for _, g in demanda.iterrows()
-    }
-
-    cap_dict = {}
-    for _, r in loader.cupos.iterrows():
-        inst_id = str(r["ID_Institucion"])
-        prog = str(r["Programa"]).strip() if ("Programa" in loader.cupos.columns and pd.notna(r["Programa"])) else ""
-        tipo_est = str(r["Tipo_Estudiante (Pregrado/Posgrado)"]).strip() if ("Tipo_Estudiante (Pregrado/Posgrado)" in loader.cupos.columns and pd.notna(r["Tipo_Estudiante (Pregrado/Posgrado)"])) else ""
-        sem = str(r["Semestre (AAAA-S)"]).strip() if ("Semestre (AAAA-S)" in loader.cupos.columns and pd.notna(r["Semestre (AAAA-S)"])) else ""
-
-        cap_dict[(inst_id, prog or programa_manual, tipo_est or tipo_est_manual, sem or semestre)] = int(r["Cupo_Estimado_Semestral"])
-
-    instituciones = [str(j) for j in loader.oferta["ID_Institucion"].dropna().unique().tolist()]
-
-    base_raw = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
-    base = pd.DataFrame({"ID_Institucion": base_raw["ID_Institucion"]})
-    rename_pairs = {
-        "Acceso_Transporte_Publico (1-5)": "Acceso_Transporte_Publico",
-        "MisionVisionProposito_AlineacionDocencia (1-5)": "MisionVisionProposito_AlineacionDocencia",
-        "Evalua_Estudiantes_Profesores (0-5)": "Evalua_Estudiantes_Profesores",
-        "Vinculacion_Planta_Especialistas_%": "Vinculacion_Planta_Especialistas_%",
-        "Servicios_UCI (0/1)": "Servicios_UCI",
-        "Servicios_UCIN (0/1)": "Servicios_UCIN",
-        "Servicios_Pediatricos (0/1)": "Servicios_Pediatricos",
-        "Servicios_Obstetricia (0/1)": "Servicios_Obstetricia",
-        "Nro_Universidades_Comparten": "Nro_Universidades_Comparten",
-    }
-    for raw_col, norm_col in rename_pairs.items():
-        if raw_col in base_raw.columns:
-            base[norm_col] = base_raw[raw_col]
-
-    S = ScoreCalculator.normalize_criteria(base)
-    s_ids = S.index.astype(str)
-
-    oferta_idx = loader.oferta.copy()
-    oferta_idx["ID_Institucion"] = oferta_idx["ID_Institucion"].astype(str)
-    oferta_idx = oferta_idx.set_index("ID_Institucion")
-
-    calidad_idx = loader.calidad.copy()
-    calidad_idx["ID_Institucion"] = calidad_idx["ID_Institucion"].astype(str)
-    calidad_idx = calidad_idx.set_index("ID_Institucion")
-
-    if "Es_Hospital_Universitario" in loader.oferta.columns:
-        hosp_uni = oferta_idx["Es_Hospital_Universitario"].reindex(s_ids, fill_value=0)
-        S["Es_Hospital_Universitario_norm"] = pd.to_numeric(hosp_uni, errors="coerce").fillna(0).clip(0, 1).values
-
-    if "Escenario_Avalado_Practicas" in loader.oferta.columns:
-        esc = oferta_idx["Escenario_Avalado_Practicas"].reindex(s_ids, fill_value=0)
-        S["Escenario_Avalado_Practicas_norm"] = pd.to_numeric(esc, errors="coerce").fillna(0).clip(0, 1).values
-
-    if "Admiten_Docentes_Externos (Sí/No)" in loader.calidad.columns:
-        adm = calidad_idx["Admiten_Docentes_Externos (Sí/No)"].reindex(s_ids, fill_value="No")
-        adm_num = adm.astype(str).str.strip().str.lower().map({"sí": 1, "si": 1, "yes": 1, "1": 1, "true": 1}).fillna(0)
-        S["Admiten_Docentes_Externos_norm"] = adm_num.values
-
-    for col_raw, col_norm in [("Areas_Bienestar (0/1)", "Areas_Bienestar_norm"), ("Areas_Academicas (0/1)", "Areas_Academicas_norm")]:
-        if col_raw in loader.calidad.columns:
-            col_s = calidad_idx[col_raw].reindex(s_ids, fill_value=0)
-            S[col_norm] = pd.to_numeric(col_s, errors="coerce").fillna(0).clip(0, 1).values
-
-    weights_norm = {_normalize_weight_key(k): float(w) for k, w in weights.items()}
-
-    missing_active_criteria = []
-    for k in weights_norm.keys():
-        if k in ["%_Contraprestacion_Matricula", "Cobro_EPP", "EPP_Exigidos"]:
+# Construir V(j,g)
+V = {}
+for j in instituciones:
+    for g in groups:
+        if not feasible[(j,g)]:
             continue
-        required_col = CRITERIA_REQUIRED_NORM_COLUMNS.get(k, f"{k}_norm")
-        if required_col not in S.columns:
-            missing_active_criteria.append(k)
+        p,n,t,s = g
 
-    if missing_active_criteria:
-        raise ValueError(
-            "Faltan columnas fuente para criterios activos en 05_Ponderaciones: "
-            f"{missing_active_criteria}. Ajusta ponderaciones o incluye esas columnas en 01_Oferta/03_Calidad."
-        )
+        # costos por grupo
+        pct_contra, cobro_epp = lookup_costo(j, p, n, t, s)
 
-    V = {}
-    count_factible = 0
-    count_asignado = 0
-    for j in instituciones:
-        for g in groups:
-            cap = cap_dict.get((j, g[0], g[1], g[3]), 0)
-            if cap <= 0:
+        # si falta costo, puedes: (1) hacerlo no factible o (2) penalizar
+        if pd.isna(pct_contra):
+            continue  # versión estricta: si no hay costo, no se asigna
+
+        # normalizar costos: %
+        contra_norm = 1.0 - float(pct_contra)/100.0  # mayor mejor
+        epp_norm = 1.0 - float(cobro_epp)            # mayor mejor (no cobra=1)
+
+# Construir V(j,g)
+print("=== CÁLCULO DE SCORES ===")
+V = {}
+count_factible = 0
+count_asignado = 0
+
+for j in instituciones:
+    for g in groups:
+        if not feasible[(j,g)]:
+            continue
+        count_factible += 1
+        
+        p,n,t,s = g
+
+        # costos por grupo
+        pct_contra, cobro_epp = lookup_costo(j, p, n, t, s)
+
+        # si falta costo, puedes: (1) hacerlo no factible o (2) penalizar
+        if pd.isna(pct_contra):
+            continue  # versión estricta: si no hay costo, no se asigna
+
+        count_asignado += 1
+        
+        # normalizar costos: %
+        contra_norm = 1.0 - float(pct_contra)/100.0  # mayor mejor
+        epp_norm = 1.0 - float(cobro_epp)            # mayor mejor (no cobra=1)
+
+        # armar score con pesos
+        score = 0.0
+        for k, w in weights.items():
+            if w <= 0:
                 continue
-            count_factible += 1
+            if k == "%_Contraprestacion_Matricula":
+                sk = contra_norm
+            elif k == "Cobro_EPP":
+                sk = epp_norm
+            else:
+                sk = S.loc[j, f"{k}_norm"] if f"{k}_norm" in S.columns else 0.0
+                if pd.isna(sk):
+                    sk = 0.0
+            score += w * float(sk)
 
-            pct_contra, cobro_epp = _lookup_costo(loader.costos, j, g[0], g[1], g[2], g[3])
-            count_asignado += 1
+        V[(j,g)] = score
 
-            contra_norm = 1.0 - float(pct_contra) / 100.0
-            epp_norm = 1.0 - float(cobro_epp)
+print(f"Pares (j,g) factibles: {count_factible}")
+print(f"Pares (j,g) con costo asignado: {count_asignado}")
+print(f"Pares (j,g) para optimizar: {len(V)}")
+print()
 
-            score = 0.0
-            for k, w in weights_norm.items():
-                if w <= 0:
-                    continue
-                if k == "%_Contraprestacion_Matricula":
-                    sk = contra_norm
-                elif k in ["Cobro_EPP", "EPP_Exigidos"]:
-                    sk = epp_norm
-                elif k == "Admiten_Docentes_Externos":
-                    sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
-                else:
-                    norm_col = f"{k}_norm"
-                    sk = S.loc[j, norm_col] if norm_col in S.columns else 0.0
-                    if pd.isna(sk):
-                        sk = 0.0
-                score += w * float(sk)
-            V[(j, g)] = score
+# -----------------------
+# 9) Optimización MILP (base)
+# -----------------------
+print("=== OPTIMIZACIÓN ===")
+model = LpProblem("Asignacion_Practicas", LpMaximize)
 
-    _notify(status_callback, f"✓ Pares (j,g) para optimización: {len(V)}")
+x = {}
+for (j,g), val in V.items():
+    x[(j,g)] = LpVariable(f"x_{j}_{g[0]}_{g[1]}_{g[2]}_{g[3]}", lowBound=0, cat=LpInteger)
 
-    optimizer = Optimizer(verbose=False)
-    results_df = optimizer.optimize(V, demand_dict, cap_dict, instituciones, groups, semestre)
+# Objetivo
+model += lpSum(V[(j,g)] * x[(j,g)] for (j,g) in x)
 
-    if not results_df.empty and "Institucion" in loader.oferta.columns:
-        oferta_names = loader.oferta[["ID_Institucion", "Institucion"]].copy()
-        oferta_names["ID_Institucion"] = oferta_names["ID_Institucion"].astype(str)
-        results_df["ID_Institucion"] = results_df["ID_Institucion"].astype(str)
-        results_df = results_df.merge(oferta_names, on="ID_Institucion", how="left")
-        friendly_cols = [
-            "ID_Institucion",
-            "Institucion",
-            "Programa",
-            "Tipo_Estudiante",
-            "Tipo_Practica",
-            "Semestre",
-            "Asignados",
-            "Score_unitario",
-        ]
-        results_df = results_df[[c for c in friendly_cols if c in results_df.columns]]
+# Demanda
+for g in groups:
+    model += lpSum(x[(j,g)] for j in instituciones if (j,g) in x) == demand_dict[g], f"Demanda_{g}"
 
-    if not results_df.empty and "Score_unitario" in results_df.columns:
-        results_df["Score_unitario"] = pd.to_numeric(results_df["Score_unitario"], errors="coerce").round(4)
+# Capacidad agregada por (j,p,n,s)
+# sum_t x <= cupo
+for (j,p,n,s), cap in cap_dict.items():
+    if s != SEMESTRE:
+        continue
+    relevant_groups = [g for g in groups if g[0]==p and g[1]==n and g[3]==s]
+    if not relevant_groups:
+        continue
+    model += lpSum(x[(j,g)] for g in relevant_groups if (j,g) in x) <= cap, f"Cap_{j}_{p}_{n}_{s}"
 
-    total_demanda = int(sum(demand_dict.values()))
-    total_asignado = int(results_df["Asignados"].sum()) if not results_df.empty else 0
-    brecha = total_demanda - total_asignado
-    tasa_cobertura = (total_asignado / total_demanda * 100) if total_demanda > 0 else 0.0
+# Resolver
+solver = PULP_CBC_CMD(msg=True)
+status = model.solve(solver)
 
-    if not results_df.empty:
-        summary = results_df.groupby(["Programa", "Tipo_Estudiante", "Tipo_Practica"])["Asignados"].sum().reset_index()
-        summary.columns = ["Programa", "Tipo_Estudiante", "Tipo_Practica", "Asignados"]
-        summary["Demanda"] = summary.apply(
-            lambda row: demand_dict.get((row["Programa"], row["Tipo_Estudiante"], row["Tipo_Practica"], semestre), 0),
-            axis=1,
-        )
-        summary["Gap"] = summary["Demanda"] - summary["Asignados"]
+print()
+print("=== RESULTADOS ===")
+print(f"Estado: {status}")
+if hasattr(model, 'status'):
+    obj_val = model.objective.value() if model.objective.value() else 0
+    print(f"Valor óptimo: {obj_val:.4f}")
+    
+    # Validaciones de demanda vs asignaciones
+    total_demanda = sum(demand_dict.values())
+print()
 
-        util = results_df.groupby("ID_Institucion")["Asignados"].sum().reset_index()
-        util.columns = ["ID_Institucion", "Estudiantes_Asignados"]
-        util["Capacidad"] = util["ID_Institucion"].apply(lambda jid: sum(v for k, v in cap_dict.items() if k[0] == jid))
-        util["Capacidad"] = pd.to_numeric(util["Capacidad"], errors="coerce").fillna(0)
-        util["Utilización_%"] = np.where(
-            util["Capacidad"] > 0,
-            (util["Estudiantes_Asignados"] / util["Capacidad"] * 100).round(1),
-            0.0,
-        )
-        if "Institucion" in results_df.columns:
-            util = util.merge(results_df[["ID_Institucion", "Institucion"]].drop_duplicates(), on="ID_Institucion", how="left")
-    else:
-        summary = pd.DataFrame()
-        util = pd.DataFrame()
+# Resultados
+rows = []
+for (j,g), var in x.items():
+    if var.value() and var.value() > 0:
+        p,n,t,s = g
+        rows.append({"ID_Institucion": j, "Programa": p, "Tipo_Estudiante": n, "Tipo_Practica": t, "Semestre": s,
+                     "Asignados": int(var.value()), "Score_unitario": V[(j,g)]})
 
-    return {
-        "asignaciones": results_df,
-        "summary": summary,
-        "util": util,
-        "total_demanda": total_demanda,
-        "total_asignado": total_asignado,
-        "brecha": brecha,
-        "tasa_cobertura": tasa_cobertura,
-        "obj_value": optimizer.get_objective_value(),
-        "debug": {
-            "instituciones": len(instituciones),
-            "grupos": len(groups),
-            "pares_factibles": count_factible,
-            "pares_con_costo": count_asignado,
-            "criterios": len(weights_norm),
-        },
-    }
+if rows:
+    res = pd.DataFrame(rows).sort_values(["Programa","Tipo_Estudiante","Tipo_Practica","ID_Institucion"])
+    print("Asignaciones realizadas:")
+    print(res.to_string(index=False))
+    print()
+    
+    # Resumen por grupo
+    print("Resumen por grupo de demanda:")
+    summary = res.groupby(["Programa", "Tipo_Estudiante", "Tipo_Practica"])["Asignados"].sum().reset_index()
+    summary.columns = ["Programa", "Tipo_Estudiante", "Tipo_Practica", "Asignados"]
+    
+    # Agregar columna de demanda para comparación
+    summary["Demanda"] = summary.apply(
+        lambda row: demand_dict.get((row["Programa"], row["Tipo_Estudiante"], row["Tipo_Practica"], "2026-1"), 0),
+        axis=1
+    )
+    summary["Gap"] = summary["Demanda"] - summary["Asignados"]
+    print(summary.to_string(index=False))
+    print()
+    
+    # Resumen de capacidad
+    print("Utilización de capacidad por institución:")
+    util = res.groupby("ID_Institucion")["Asignados"].sum().reset_index()
+    util.columns = ["ID_Institucion", "Estudiantes_Asignados"]
+    util["Capacidad"] = util["ID_Institucion"].apply(lambda j: sum(v for k, v in cap_dict.items() if k[0] == j))
+    util["Utilización_%"] = (util["Estudiantes_Asignados"] / util["Capacidad"] * 100).round(1)
+    print(util.to_string(index=False))
+    
+    # Resumen final
+    print()
+    print("=" * 80)
+    print("RESUMEN EJECUTIVO")
+    print("=" * 80)
+    total_asignado = summary["Asignados"].sum()
+    print(f"Total de estudiantes demandados: {total_demanda}")
+    print(f"Total de estudiantes asignados: {total_asignado}")
+    print(f"Brecha (no asignados): {total_demanda - total_asignado}")
+    print(f"Tasa de cobertura: {total_asignado / total_demanda * 100:.1f}%")
+    print()
+    
+    if total_asignado < total_demanda:
+        print("⚠ PROBLEMA: La capacidad total es INSUFICIENTE")
+        print(f"  Capacidad disponible: {sum(cap_dict.values())} cupos")
+        print(f"  Demanda total: {total_demanda} estudiantes")
+        print(f"  Déficit: {total_demanda - sum(cap_dict.values())} estudiantes")
+        print()
+        print("RECOMENDACIONES:")
+        print("  1. Aumentar cupos en escenarios existentes")
+        print("  2. Agregar nuevas instituciones/escenarios")
+        print("  3. Ajustar demanda de estudiantes")
+
+else:
+    print("⚠ No se realizaron asignaciones. Verificar demanda, cupos y costos.")
+    print()
+    print("DEBUG INFO:")
+    print(f"  Total demanda: {total_demanda}")
+    print(f"  Total grupos: {len(groups)}")
+    print(f"  Total instituciones: {len(instituciones)}")
+    print(f"  Pares factibles: {count_factible}")
+    print(f"  Pares con costo: {count_asignado}")
+    print(f"  Pares para optimizar: {len(V)}")
+
