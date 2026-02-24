@@ -120,6 +120,52 @@ def generate_ejemplo_costos(semestre: str = "2026-1") -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def clean_criterio_codigo(code: str) -> str:
+    """Limpia código de criterio removiendo sufijos como '(...)' y espacios extra."""
+    text = str(code or "").strip()
+    if " (" in text:
+        text = text.split(" (", 1)[0]
+    return " ".join(text.split())
+
+
+def to_bool01(x) -> int:
+    """Mapea valores comunes Sí/No a 1/0 de forma robusta."""
+    if pd.isna(x):
+        return 0
+    if isinstance(x, (int, float, np.integer, np.floating)):
+        return 1 if float(x) > 0 else 0
+    value = str(x).strip().lower()
+    if value in {"sí", "si", "1", "true", "yes"}:
+        return 1
+    if value in {"no", "0", "false"}:
+        return 0
+    return 0
+
+
+def map_epp_exigidos(x):
+    """Mapea EPP_Exigidos a costo numérico: 0 (sin), 0.5 (parcial), 1 (completo)."""
+    if pd.isna(x):
+        return np.nan
+    value = str(x).strip().lower()
+    if "sin exigencia" in value:
+        return 0.0
+    if "parcial" in value:
+        return 0.5
+    if "completo" in value:
+        return 1.0
+    return np.nan
+
+
+def compute_scores_debug(score_rows: list) -> pd.DataFrame:
+    """Devuelve score por institución y criterios sk para auditoría."""
+    if not score_rows:
+        return pd.DataFrame()
+    df = pd.DataFrame(score_rows)
+    value_cols = [c for c in df.columns if c.startswith("sk_") or c == "score_total"]
+    grouped = df.groupby("ID_Institucion", as_index=False)[value_cols].mean(numeric_only=True)
+    return grouped
+
+
 def generar_excel_resultados(results: Dict) -> bytes:
     """
     Genera un Excel bonito con múltiples hojas de resultados
@@ -307,6 +353,13 @@ def procesar_datos(
         
         # Obtener ponderaciones
         weights, crit_type = loader.get_ponderaciones_dict()
+
+        # Validación explícita de suma de pesos activos
+        pesos_activos = sum(float(v) for v in weights.values())
+        if abs(pesos_activos - 1.0) > 1e-6:
+            raise ValueError(
+                f"Los pesos activos del set seleccionado deben sumar 1.0; suma actual={pesos_activos:.6f}"
+            )
         
         st.write(f"✓ {len(weights)} criterios cargados")
         
@@ -394,22 +447,10 @@ def procesar_datos(
         # Instituciones
         instituciones = [str(j) for j in loader.oferta["ID_Institucion"].dropna().unique().tolist()]
         
-        # Merge oferta + calidad
-        base = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
-        
-        crit_cols = [
-            "ID_Institucion",
-            "Acceso_Transporte_Publico (1-5)",
-            "MisionVisionProposito_AlineacionDocencia (1-5)",
-            "Evalua_Estudiantes_Profesores (0-5)",
-            "Vinculacion_Planta_Especialistas_%",
-            "Servicios_UCI (0/1)",
-            "Servicios_UCIN (0/1)",
-            "Servicios_Pediatricos (0/1)",
-            "Servicios_Obstetricia (0/1)",
-            "Nro_Universidades_Comparten",
-        ]
-        
+        # Merge oferta + calidad (tolerante a columnas faltantes)
+        base_raw = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
+        base = pd.DataFrame({"ID_Institucion": base_raw["ID_Institucion"]})
+
         rename_map = {
             "Acceso_Transporte_Publico (1-5)": "Acceso_Transporte_Publico",
             "MisionVisionProposito_AlineacionDocencia (1-5)": "MisionVisionProposito_AlineacionDocencia",
@@ -421,8 +462,14 @@ def procesar_datos(
             "Servicios_Obstetricia (0/1)": "Servicios_Obstetricia",
             "Nro_Universidades_Comparten": "Nro_Universidades_Comparten",
         }
-        
-        base = base[crit_cols].rename(columns=rename_map)
+
+        for raw_col, norm_col in rename_map.items():
+            if raw_col in base_raw.columns:
+                base[norm_col] = base_raw[raw_col]
+
+        # Compatibilidad: columna única UCI_UCIN
+        if "Servicios_UCI_UCIN (0/1)" in base_raw.columns:
+            base["Servicios_UCI_UCIN"] = base_raw["Servicios_UCI_UCIN (0/1)"]
         
         # Normalizar criterios
         S = ScoreCalculator.normalize_criteria(base)
@@ -439,11 +486,23 @@ def procesar_datos(
         # Criterios adicionales del nuevo set
         if "Es_Hospital_Universitario" in loader.oferta.columns:
             hosp_uni = oferta_idx["Es_Hospital_Universitario"].reindex(s_ids, fill_value=0)
-            S["Es_Hospital_Universitario_norm"] = pd.to_numeric(hosp_uni, errors="coerce").fillna(0).clip(0, 1).values
+            S["Es_Hospital_Universitario_norm"] = hosp_uni.apply(to_bool01).values
 
         if "Escenario_Avalado_Practicas" in loader.oferta.columns:
             esc = oferta_idx["Escenario_Avalado_Practicas"].reindex(s_ids, fill_value=0)
-            S["Escenario_Avalado_Practicas_norm"] = pd.to_numeric(esc, errors="coerce").fillna(0).clip(0, 1).values
+            S["Escenario_Avalado_Practicas_norm"] = esc.apply(to_bool01).values
+
+        # Compatibilidad UCI/UCIN/UCI_UCIN
+        if "Servicios_UCI_UCIN" in base.columns:
+            combo = base.set_index("ID_Institucion")["Servicios_UCI_UCIN"].reindex(s_ids, fill_value=0)
+            S["Servicios_UCI_UCIN_norm"] = combo.apply(to_bool01).astype(float).values
+        elif "Servicios_UCI" in base.columns or "Servicios_UCIN" in base.columns:
+            uci = base.set_index("ID_Institucion").get("Servicios_UCI", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+            ucin = base.set_index("ID_Institucion").get("Servicios_UCIN", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+            S["Servicios_UCI_UCIN_norm"] = np.maximum(
+                uci.apply(to_bool01).astype(float),
+                ucin.apply(to_bool01).astype(float),
+            )
 
         if "Admiten_Docentes_Externos (Sí/No)" in loader.calidad.columns:
             adm = calidad_idx["Admiten_Docentes_Externos (Sí/No)"].reindex(s_ids, fill_value="No")
@@ -468,41 +527,60 @@ def procesar_datos(
 
             c = loader.costos.copy()
             c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-            c["Tipo_Estudiante_Costo"] = c["Tipo_Estudiante_Costo"].astype(str)
-            c["Tipo_Practica_Costo"] = c["Tipo_Practica_Costo"].astype(str)
-            c["Semestre_Vigencia (AAAA-S)"] = c["Semestre_Vigencia (AAAA-S)"].astype(str)
-            c["Programa_Costo"] = c["Programa_Costo"].astype(str)
+            if "Tipo_Estudiante_Costo" in c.columns:
+                c["Tipo_Estudiante_Costo"] = c["Tipo_Estudiante_Costo"].astype(str)
+            if "Tipo_Practica_Costo" in c.columns:
+                c["Tipo_Practica_Costo"] = c["Tipo_Practica_Costo"].astype(str)
+            if "Semestre_Vigencia (AAAA-S)" in c.columns:
+                c["Semestre_Vigencia (AAAA-S)"] = c["Semestre_Vigencia (AAAA-S)"].astype(str)
+            if "Programa_Costo" in c.columns:
+                c["Programa_Costo"] = c["Programa_Costo"].astype(str)
+            if "EPP_Exigidos_num" not in c.columns and "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)" in c.columns:
+                c["EPP_Exigidos_num"] = c["EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)"].apply(map_epp_exigidos)
 
             # 1) Match estricto
-            df = c[
-                (c["ID_Institucion"] == id_inst) &
-                (c["Tipo_Estudiante_Costo"] == tipo_est) &
-                (c["Tipo_Practica_Costo"] == tipo_pract) &
-                (c["Semestre_Vigencia (AAAA-S)"] == semestre)
-            ]
-            df1 = df[df["Programa_Costo"] == prog]
+            df = c[c["ID_Institucion"] == id_inst]
+            if "Tipo_Estudiante_Costo" in c.columns:
+                df = df[df["Tipo_Estudiante_Costo"] == tipo_est]
+            if "Tipo_Practica_Costo" in c.columns:
+                df = df[df["Tipo_Practica_Costo"] == tipo_pract]
+            if "Semestre_Vigencia (AAAA-S)" in c.columns:
+                df = df[df["Semestre_Vigencia (AAAA-S)"] == semestre]
+
+            if "Programa_Costo" in c.columns:
+                df1 = df[df["Programa_Costo"] == prog]
+                df2 = df[df["Programa_Costo"] == "Todos"]
+            else:
+                df1 = df
+                df2 = pd.DataFrame()
+
             if len(df1) > 0:
                 row = df1.iloc[0]
-                return row["pct_contra"], row["Cobro_EPP_num"]
-            df2 = df[df["Programa_Costo"] == "Todos"]
+                return row["pct_contra"], row["Cobro_EPP_num"], row.get("EPP_Exigidos_num", np.nan)
             if len(df2) > 0:
                 row = df2.iloc[0]
-                return row["pct_contra"], row["Cobro_EPP_num"]
+                return row["pct_contra"], row["Cobro_EPP_num"], row.get("EPP_Exigidos_num", np.nan)
 
             # 2) Fallback sin tipo_practica
-            df = c[
-                (c["ID_Institucion"] == id_inst) &
-                (c["Tipo_Estudiante_Costo"] == tipo_est) &
-                (c["Semestre_Vigencia (AAAA-S)"] == semestre)
-            ]
-            df1 = df[df["Programa_Costo"] == prog]
+            df = c[c["ID_Institucion"] == id_inst]
+            if "Tipo_Estudiante_Costo" in c.columns:
+                df = df[df["Tipo_Estudiante_Costo"] == tipo_est]
+            if "Semestre_Vigencia (AAAA-S)" in c.columns:
+                df = df[df["Semestre_Vigencia (AAAA-S)"] == semestre]
+
+            if "Programa_Costo" in c.columns:
+                df1 = df[df["Programa_Costo"] == prog]
+                df2 = df[df["Programa_Costo"] == "Todos"]
+            else:
+                df1 = df
+                df2 = pd.DataFrame()
+
             if len(df1) > 0:
                 row = df1.iloc[0]
-                return row["pct_contra"], row["Cobro_EPP_num"]
-            df2 = df[df["Programa_Costo"] == "Todos"]
+                return row["pct_contra"], row["Cobro_EPP_num"], row.get("EPP_Exigidos_num", np.nan)
             if len(df2) > 0:
                 row = df2.iloc[0]
-                return row["pct_contra"], row["Cobro_EPP_num"]
+                return row["pct_contra"], row["Cobro_EPP_num"], row.get("EPP_Exigidos_num", np.nan)
 
             # 3) Fallback por institución (neutral si falta)
             df = c[c["ID_Institucion"] == id_inst]
@@ -510,25 +588,69 @@ def procesar_datos(
                 row = df.iloc[0]
                 pct = row["pct_contra"] if pd.notna(row["pct_contra"]) else 50.0
                 epp = row["Cobro_EPP_num"] if pd.notna(row["Cobro_EPP_num"]) else 0
-                return pct, epp
+                epp_exig = row.get("EPP_Exigidos_num", np.nan)
+                return pct, epp, epp_exig
 
-            return 50.0, 0
+            return 50.0, 0, np.nan
         
-        # Normalizar llaves de criterios para tolerar códigos con unidad en paréntesis
+        # Normalizar llaves de criterios de forma robusta
         weights_norm = {}
         for k, w in weights.items():
-            key = str(k).strip()
-            if key.endswith("(0/1)"):
-                key = key.replace(" (0/1)", "")
-            if key.endswith("(1-5)"):
-                key = key.replace(" (1-5)", "")
-            if key.endswith("(0-5)"):
-                key = key.replace(" (0-5)", "")
-            weights_norm[key] = float(w)
+            key = clean_criterio_codigo(k)
+            weights_norm[key] = weights_norm.get(key, 0.0) + float(w)
+
+        # Validación explícita de pesos limpios
+        pesos_limpios_sum = sum(weights_norm.values())
+        if abs(pesos_limpios_sum - 1.0) > 1e-6:
+            raise ValueError(
+                f"La suma de pesos activos (limpios) debe ser 1.0; suma actual={pesos_limpios_sum:.6f}"
+            )
+
+        weights_raw_df = pd.DataFrame(
+            {
+                "criterio_raw": list(weights.keys()),
+                "criterio_clean": [clean_criterio_codigo(k) for k in weights.keys()],
+                "peso": list(weights.values()),
+                "tipo": [crit_type.get(k) for k in weights.keys()],
+            }
+        )
+        weights_clean_df = weights_raw_df.groupby("criterio_clean", as_index=False)["peso"].sum()
+
+        criteria_status_rows = []
+        for k in weights_norm.keys():
+            source = "S_norm"
+            if k == "%_Contraprestacion_Matricula":
+                source = "costo_pct"
+            elif k == "Cobro_EPP":
+                source = "costo_cobro_epp"
+            elif k == "EPP_Exigidos":
+                source = "costo_epp_exigidos"
+            elif k == "Admiten_Docentes_Externos":
+                source = "calidad_bool"
+            elif f"{k}_norm" not in S.columns:
+                source = "missing"
+            criteria_status_rows.append({"criterio": k, "source": source})
+        criteria_status_df = pd.DataFrame(criteria_status_rows)
+
+        special_criteria = {
+            "%_Contraprestacion_Matricula",
+            "Cobro_EPP",
+            "EPP_Exigidos",
+            "Admiten_Docentes_Externos",
+        }
+
+        missing_criteria = set()
+        for k in weights_norm.keys():
+            if k in special_criteria:
+                continue
+            if f"{k}_norm" not in S.columns:
+                missing_criteria.add(k)
 
         V = {}
         count_factible = 0
         count_asignado = 0
+        pair_score_rows = []
+        epp_fallback_pairs = 0
         
         for j in instituciones:
             for g in groups:
@@ -539,7 +661,7 @@ def procesar_datos(
                 count_factible += 1
                 p, n, t, s = g
                 
-                pct_contra, cobro_epp = lookup_costo(j, p, n, t, s)
+                pct_contra, cobro_epp, epp_exig_val = lookup_costo(j, p, n, t, s)
                 
                 if pd.isna(pct_contra):
                     continue
@@ -547,27 +669,42 @@ def procesar_datos(
                 count_asignado += 1
                 
                 contra_norm = 1.0 - float(pct_contra) / 100.0
-                epp_norm = 1.0 - float(cobro_epp)
+                cobro_epp_norm = 1.0 - float(cobro_epp)
+                if pd.notna(epp_exig_val):
+                    epp_exig_norm = 1.0 - float(epp_exig_val)
+                else:
+                    epp_exig_norm = cobro_epp_norm
+                    epp_fallback_pairs += 1
                 
                 score = 0.0
+                score_row = {"ID_Institucion": j}
                 for k, w in weights_norm.items():
                     if w <= 0:
                         continue
                     
                     if k == "%_Contraprestacion_Matricula":
                         sk = contra_norm
-                    elif k in ["Cobro_EPP", "EPP_Exigidos"]:
-                        sk = epp_norm
-                    elif k == "Admiten_Docentes_Externos (Sí/No)":
+                    elif k == "Cobro_EPP":
+                        sk = cobro_epp_norm
+                    elif k == "EPP_Exigidos":
+                        sk = epp_exig_norm
+                    elif k == "Admiten_Docentes_Externos":
                         sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
                     else:
                         sk = S.loc[j, f"{k}_norm"] if f"{k}_norm" in S.columns else 0.0
+                        if f"{k}_norm" not in S.columns:
+                            missing_criteria.add(k)
                         if pd.isna(sk):
                             sk = 0.0
                     
                     score += w * float(sk)
+                    score_row[f"sk_{k}"] = float(sk)
                 
                 V[(j, g)] = score
+                score_row["score_total"] = float(score)
+                pair_score_rows.append(score_row)
+
+        score_debug_df = compute_scores_debug(pair_score_rows)
         
         st.write(f"✓ Pares (j,g) para optimización: {len(V)}")
         
@@ -592,6 +729,23 @@ def procesar_datos(
             results_df["Score_unitario"] = pd.to_numeric(results_df["Score_unitario"], errors="coerce").round(4)
         
         obj_val = optimizer.get_objective_value()
+
+        score_consistency = {
+            "max_abs_diff": None,
+            "mean_abs_diff": None,
+        }
+        if not results_df.empty and not score_debug_df.empty:
+            compare = results_df[["ID_Institucion", "Score_unitario"]].copy()
+            compare["ID_Institucion"] = compare["ID_Institucion"].astype(str)
+            score_debug_df["ID_Institucion"] = score_debug_df["ID_Institucion"].astype(str)
+            compare = compare.merge(
+                score_debug_df[["ID_Institucion", "score_total"]],
+                on="ID_Institucion",
+                how="left",
+            )
+            compare["abs_diff"] = (pd.to_numeric(compare["Score_unitario"], errors="coerce") - pd.to_numeric(compare["score_total"], errors="coerce")).abs()
+            score_consistency["max_abs_diff"] = float(compare["abs_diff"].max()) if compare["abs_diff"].notna().any() else None
+            score_consistency["mean_abs_diff"] = float(compare["abs_diff"].mean()) if compare["abs_diff"].notna().any() else None
         
         # Compilar resultados
         total_demanda = sum(demand_dict.values())
@@ -632,11 +786,44 @@ def procesar_datos(
                 )
         else:
             util = pd.DataFrame()
+
+        base_debug_cols = [
+            "ID_Institucion",
+            "Acceso_Transporte_Publico (1-5)",
+            "MisionVisionProposito_AlineacionDocencia (1-5)",
+            "Evalua_Estudiantes_Profesores (0-5)",
+            "Vinculacion_Planta_Especialistas_%",
+            "Servicios_UCI (0/1)",
+            "Servicios_UCIN (0/1)",
+            "Servicios_UCI_UCIN (0/1)",
+            "Servicios_Pediatricos (0/1)",
+            "Servicios_Obstetricia (0/1)",
+            "Nro_Universidades_Comparten",
+            "Es_Hospital_Universitario",
+            "Escenario_Avalado_Practicas",
+            "Admiten_Docentes_Externos (Sí/No)",
+            "Areas_Bienestar (0/1)",
+            "Areas_Academicas (0/1)",
+        ]
+        base_debug = base_raw[[c for c in base_debug_cols if c in base_raw.columns]].copy()
+
+        costos_debug_cols = [
+            "ID_Institucion",
+            "Programa_Costo",
+            "Tipo_Estudiante_Costo",
+            "Tipo_Practica_Costo",
+            "Semestre_Vigencia (AAAA-S)",
+            "%_Contraprestacion_Matricula (0-100)",
+            "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)",
+            "Cobro_EPP (No cobra/Cobra a la Universidad)",
+        ]
+        costos_debug = loader.costos[[c for c in costos_debug_cols if c in loader.costos.columns]].copy()
         
         return {
             "asignaciones": results_df,
             "summary": summary,
             "util": util,
+            "score_debug": score_debug_df,
             "total_demanda": total_demanda,
             "total_asignado": total_asignado,
             "brecha": brecha,
@@ -647,7 +834,18 @@ def procesar_datos(
                 "grupos": len(groups),
                 "pares_factibles": count_factible,
                 "pares_con_costo": count_asignado,
-                "criterios": len(weights_norm)
+                "criterios": len(weights_norm),
+                "missing_criteria": sorted(list(missing_criteria)),
+                "epp_exigidos_fallback_pairs": epp_fallback_pairs,
+                "score_consistency": score_consistency,
+                "weights_raw": weights_raw_df,
+                "weights_clean": weights_clean_df,
+                "criteria_status": criteria_status_df,
+                "base_debug": base_debug,
+                "costos_debug": costos_debug,
+                "score_debug": score_debug_df,
+                "instituciones_list": instituciones,
+                "groups_list": groups,
             }
         }
     

@@ -231,4 +231,68 @@ def render_demanda_vs_asignacion(df_summary):
 def render_debug_info(debug_dict):
     """Renderiza información de debug"""
     with st.expander("🔧 Información de Debug"):
-        st.json(debug_dict)
+        if not debug_dict:
+            st.info("No hay datos de debug disponibles")
+            return
+
+        st.subheader("Resumen")
+        resumen_keys = [
+            "instituciones",
+            "grupos",
+            "pares_factibles",
+            "pares_con_costo",
+            "criterios",
+            "missing_criteria",
+            "epp_exigidos_fallback_pairs",
+            "score_consistency",
+        ]
+        resumen = {k: debug_dict.get(k) for k in resumen_keys if k in debug_dict}
+        st.json(resumen)
+
+        if "weights_raw" in debug_dict:
+            st.subheader("Ponderaciones (raw)")
+            st.dataframe(debug_dict["weights_raw"], use_container_width=True, hide_index=True)
+
+        if "weights_clean" in debug_dict:
+            st.subheader("Ponderaciones (clean)")
+            st.dataframe(debug_dict["weights_clean"], use_container_width=True, hide_index=True)
+
+        if "criteria_status" in debug_dict:
+            st.subheader("Estado de criterios activos")
+            st.dataframe(debug_dict["criteria_status"], use_container_width=True, hide_index=True)
+
+        inst_list = debug_dict.get("instituciones_list")
+        if inst_list:
+            st.subheader("Debug por institución")
+            inst_sel = st.selectbox("Selecciona ID_Institucion", options=inst_list)
+
+            base_debug = debug_dict.get("base_debug")
+            if base_debug is not None and not base_debug.empty:
+                st.caption("Base (Oferta + Calidad)")
+                st.dataframe(
+                    base_debug[base_debug["ID_Institucion"].astype(str) == str(inst_sel)],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            score_debug = debug_dict.get("score_debug")
+            if score_debug is not None and not score_debug.empty:
+                st.caption("Score por criterio (promedio por institución)")
+                st.dataframe(
+                    score_debug[score_debug["ID_Institucion"].astype(str) == str(inst_sel)],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+            costos_debug = debug_dict.get("costos_debug")
+            if costos_debug is not None and not costos_debug.empty:
+                st.caption("Costos (filtrado por institución)")
+                st.dataframe(
+                    costos_debug[costos_debug["ID_Institucion"].astype(str) == str(inst_sel)],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+        if "score_debug" in debug_dict and debug_dict["score_debug"] is not None:
+            st.subheader("Score Debug Completo")
+            st.dataframe(debug_dict["score_debug"], use_container_width=True, hide_index=True)
