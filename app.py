@@ -16,12 +16,14 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 
 # Imports locales
 from src.core import DataLoader, Optimizer, ScoreCalculator
+from src.core.optimizer import GroupOptimizer
 from src.utils import setup_logging
 from src.visualization import (
     render_header, render_upload_section, render_config_section,
     render_results_summary, render_asignaciones_table, render_capacidad_chart,
     render_demanda_vs_asignacion, render_debug_info
 )
+from scripts.parse_mapa_practica import parse_mapa_practica, get_group_constraints
 
 # Configurar logging
 logger = setup_logging("logs", "debug_logs")
@@ -855,6 +857,203 @@ def procesar_datos(
         return None
 
 
+def procesar_refinado(
+    loader: DataLoader,
+    rotaciones_df: pd.DataFrame,
+    semestre_plan: int,
+    n_estudiantes: int,
+    set_id: str,
+    semestre_vigencia: str,
+) -> Optional[Dict]:
+    try:
+        loader.load_rotaciones(rotaciones_df)
+        loader.validate_pesas()
+        weights, crit_type = loader.get_ponderaciones_dict()
+
+        pesos_activos = sum(float(v) for v in weights.values())
+        if abs(pesos_activos - 1.0) > 1e-6:
+            raise ValueError(
+                f"Los pesos activos del set seleccionado deben sumar 1.0; suma actual={pesos_activos:.6f}"
+            )
+
+        weights_norm = {}
+        for k, w in weights.items():
+            key = clean_criterio_codigo(k)
+            weights_norm[key] = weights_norm.get(key, 0.0) + float(w)
+
+        cap_dict = loader.get_rotaciones_dict(semestre_plan)
+        ar_dict = loader.get_asignaturas_rotaciones(semestre_plan)
+
+        constraints = get_group_constraints(semestre_plan)
+        min_g = constraints["min"]
+        max_g = constraints["max"]
+
+        if n_estudiantes < min_g:
+            st.error(f"Se necesitan al menos {min_g} estudiantes para formar un grupo.")
+            return None
+
+        base_raw = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
+        base = pd.DataFrame({"ID_Institucion": base_raw["ID_Institucion"]})
+
+        rename_map = {
+            "Acceso_Transporte_Publico (1-5)": "Acceso_Transporte_Publico",
+            "MisionVisionProposito_AlineacionDocencia (1-5)": "MisionVisionProposito_AlineacionDocencia",
+            "Evalua_Estudiantes_Profesores (0-5)": "Evalua_Estudiantes_Profesores",
+            "Vinculacion_Planta_Especialistas_%": "Vinculacion_Planta_Especialistas_%",
+            "Servicios_UCI (0/1)": "Servicios_UCI",
+            "Servicios_UCIN (0/1)": "Servicios_UCIN",
+            "Servicios_Pediatricos (0/1)": "Servicios_Pediatricos",
+            "Servicios_Obstetricia (0/1)": "Servicios_Obstetricia",
+            "Nro_Universidades_Comparten": "Nro_Universidades_Comparten",
+        }
+        for raw_col, norm_col in rename_map.items():
+            if raw_col in base_raw.columns:
+                base[norm_col] = base_raw[raw_col]
+
+        S = ScoreCalculator.normalize_criteria(base)
+        s_ids = S.index.astype(str)
+
+        oferta_idx = loader.oferta.copy()
+        oferta_idx["ID_Institucion"] = oferta_idx["ID_Institucion"].astype(str)
+        oferta_idx = oferta_idx.set_index("ID_Institucion")
+
+        calidad_idx = loader.calidad.copy()
+        calidad_idx["ID_Institucion"] = calidad_idx["ID_Institucion"].astype(str)
+        calidad_idx = calidad_idx.set_index("ID_Institucion")
+
+        if "Es_Hospital_Universitario" in loader.oferta.columns:
+            hosp_uni = oferta_idx["Es_Hospital_Universitario"].reindex(s_ids, fill_value=0)
+            S["Es_Hospital_Universitario_norm"] = hosp_uni.apply(to_bool01).values
+
+        if "Escenario_Avalado_Practicas" in loader.oferta.columns:
+            esc = oferta_idx["Escenario_Avalado_Practicas"].reindex(s_ids, fill_value=0)
+            S["Escenario_Avalado_Practicas_norm"] = esc.apply(to_bool01).values
+
+        if "Servicios_UCI_UCIN (0/1)" in base_raw.columns:
+            combo = base.set_index("ID_Institucion")["Servicios_UCI_UCIN (0/1)"].reindex(s_ids, fill_value=0)
+            S["Servicios_UCI_UCIN_norm"] = combo.apply(to_bool01).astype(float).values
+        elif "Servicios_UCI" in base.columns or "Servicios_UCIN" in base.columns:
+            uci = base.set_index("ID_Institucion").get("Servicios_UCI", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+            ucin = base.set_index("ID_Institucion").get("Servicios_UCIN", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+            S["Servicios_UCI_UCIN_norm"] = np.maximum(
+                uci.apply(to_bool01).astype(float),
+                ucin.apply(to_bool01).astype(float),
+            )
+
+        if "Admiten_Docentes_Externos (Sí/No)" in loader.calidad.columns:
+            adm = calidad_idx["Admiten_Docentes_Externos (Sí/No)"].reindex(s_ids, fill_value="No")
+            adm_num = adm.astype(str).str.strip().str.lower().map({"sí": 1, "si": 1, "yes": 1, "1": 1, "true": 1}).fillna(0)
+            S["Admiten_Docentes_Externos_norm"] = adm_num.values
+
+        for col_raw, col_norm in [
+            ("Areas_Bienestar (0/1)", "Areas_Bienestar_norm"),
+            ("Areas_Academicas (0/1)", "Areas_Academicas_norm"),
+        ]:
+            if col_raw in loader.calidad.columns:
+                col_s = calidad_idx[col_raw].reindex(s_ids, fill_value=0)
+                S[col_norm] = pd.to_numeric(col_s, errors="coerce").fillna(0).clip(0, 1).values
+
+        loader.costos = loader.costos.copy()
+        loader.costos["Cobro_EPP_num"] = loader.costos[
+            "Cobro_EPP (No cobra/Cobra a la Universidad)"
+        ].map({"No cobra EPP": 0, "Cobra EPP a la Universidad": 1}).fillna(0)
+        loader.costos["pct_contra"] = pd.to_numeric(
+            loader.costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce"
+        )
+        if "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)" in loader.costos.columns:
+            loader.costos["EPP_Exigidos_num"] = loader.costos[
+                "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)"
+            ].apply(map_epp_exigidos)
+
+        all_ips_in_rotaciones = set()
+        for (a, r, j) in cap_dict:
+            all_ips_in_rotaciones.add(j)
+
+        scores = {}
+        for j in all_ips_in_rotaciones:
+            if j not in s_ids:
+                scores[j] = 0.0
+                continue
+
+            score = 0.0
+            for k, w in weights_norm.items():
+                if w <= 0:
+                    continue
+                if k == "%_Contraprestacion_Matricula":
+                    c = loader.costos.copy()
+                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
+                    df_c = c[c["ID_Institucion"] == j]
+                    if len(df_c) > 0:
+                        pct = df_c["pct_contra"].iloc[0]
+                        sk = 1.0 - float(pct) / 100.0 if pd.notna(pct) else 0.5
+                    else:
+                        sk = 0.5
+                elif k == "Cobro_EPP":
+                    c = loader.costos.copy()
+                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
+                    df_c = c[c["ID_Institucion"] == j]
+                    if len(df_c) > 0:
+                        sk = 1.0 - float(df_c["Cobro_EPP_num"].iloc[0])
+                    else:
+                        sk = 1.0
+                elif k == "EPP_Exigidos":
+                    c = loader.costos.copy()
+                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
+                    df_c = c[c["ID_Institucion"] == j]
+                    if len(df_c) > 0 and "EPP_Exigidos_num" in df_c.columns:
+                        val = df_c["EPP_Exigidos_num"].iloc[0]
+                        sk = 1.0 - float(val) if pd.notna(val) else 0.5
+                    else:
+                        sk = 0.5
+                elif k == "Admiten_Docentes_Externos":
+                    sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
+                else:
+                    col = f"{k}_norm"
+                    sk = S.loc[j, col] if col in S.columns else 0.0
+                    if pd.isna(sk):
+                        sk = 0.0
+                score += w * float(sk)
+            scores[j] = round(score, 4)
+
+        optimizer = GroupOptimizer(verbose=False)
+        results_df = optimizer.optimize(
+            scores=scores,
+            cap_dict=cap_dict,
+            asignaturas_rotaciones=ar_dict,
+            n_estudiantes=n_estudiantes,
+            min_group=min_g,
+            max_group=max_g,
+        )
+
+        if not results_df.empty and "Institucion" in loader.oferta.columns:
+            oferta_names = loader.oferta[["ID_Institucion", "Institucion"]].copy()
+            oferta_names["ID_Institucion"] = oferta_names["ID_Institucion"].astype(str)
+            results_df["ID_Institucion"] = results_df["ID_Institucion"].astype(str)
+            results_df = results_df.merge(oferta_names, on="ID_Institucion", how="left")
+
+        groups_summary = optimizer.get_groups_summary()
+        total_asignado = results_df["Estudiantes"].sum() if not results_df.empty else 0
+
+        return {
+            "asignaciones": results_df,
+            "grupos": groups_summary,
+            "total_estudiantes": n_estudiantes,
+            "total_asignado": int(total_asignado),
+            "n_grupos": len(groups_summary),
+            "min_group": min_g,
+            "max_group": max_g,
+            "semestre_plan": semestre_plan,
+            "asignaturas": list(ar_dict.keys()),
+            "obj_value": optimizer.get_objective_value(),
+            "scores": scores,
+        }
+
+    except Exception as e:
+        logger.error(f"Error procesando refinado: {e}")
+        st.error(f"❌ Error: {str(e)}")
+        return None
+
+
 def main():
     """Función principal"""
     render_header()
@@ -890,21 +1089,52 @@ def main():
         default_semestre=default_sem,
     )
 
-    # Advertencias dinámicas previas
-    capacidad_total = preview_capacidad(uploaded_file)
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Estudiantes a asignar", int(total_estudiantes))
-    c2.metric("Cupos disponibles (estimado)", int(capacidad_total))
-    c3.metric("Brecha preliminar", int(total_estudiantes - capacidad_total))
+    st.markdown("---")
+    modo = st.radio(
+        "Modo de optimización",
+        ["Agregado (actual)", "Refinado por semestre"],
+        horizontal=True,
+    )
 
-    if capacidad_total <= 0:
-        st.error("❌ No se detectaron cupos válidos en 02_Oferta_x_Programa.")
-    elif int(total_estudiantes) > int(capacidad_total):
-        st.warning("⚠️ La cantidad de estudiantes es mayor que la capacidad total disponible; la cobertura será parcial.")
+    semestre_plan = None
+    n_estudiantes_refinado = None
+
+    if modo == "Refinado por semestre":
+        st.subheader("⚙️ Configuración Refinada")
+        col_r1, col_r2 = st.columns(2)
+        with col_r1:
+            semestre_plan = st.selectbox(
+                "Semestre del plan de estudios",
+                options=[5, 6, 7, 8, 9, 10],
+                index=0,
+                key="semestre_plan",
+            )
+        with col_r2:
+            constraints = get_group_constraints(semestre_plan)
+            n_estudiantes_refinado = st.number_input(
+                f"Estudiantes en semestre {semestre_plan}",
+                min_value=constraints["min"],
+                max_value=75,
+                value=60,
+                step=1,
+                help=f"Grupos de {constraints['min']} a {constraints['max']} estudiantes. Techo: 75.",
+                key="n_estudiantes_refinado",
+            )
+        st.caption(f"📏 Restricción de grupos: {constraints['min']}-{constraints['max']} estudiantes por grupo")
     else:
-        st.success("✅ La capacidad total alcanza para la demanda indicada (a nivel agregado).")
+        capacidad_total = preview_capacidad(uploaded_file)
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Estudiantes a asignar", int(total_estudiantes))
+        c2.metric("Cupos disponibles (estimado)", int(capacidad_total))
+        c3.metric("Brecha preliminar", int(total_estudiantes - capacidad_total))
 
-    # Procesar
+        if capacidad_total <= 0:
+            st.error("❌ No se detectaron cupos válidos en 02_Oferta_x_Programa.")
+        elif int(total_estudiantes) > int(capacidad_total):
+            st.warning("⚠️ La cantidad de estudiantes es mayor que la capacidad total disponible; la cobertura será parcial.")
+        else:
+            st.success("✅ La capacidad total alcanza para la demanda indicada (a nivel agregado).")
+
     if st.button("🚀 Ejecutar Optimización", use_container_width=True, type="primary"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
             tmp.write(uploaded_file.getbuffer())
@@ -915,15 +1145,26 @@ def main():
                 loader = DataLoader(tmp_path, set_id, semestre)
                 loader.load_all()
 
-                st.session_state.results = procesar_datos(
-                    loader,
-                    set_id,
-                    semestre,
-                    total_estudiantes,
-                    programa_manual,
-                    tipo_est_manual,
-                    tipo_practica_manual,
-                )
+                if modo == "Refinado por semestre":
+                    mapa_path = Path(__file__).parent / "data" / "info_reunion_refinacion_modelo" / "Mapa de practica general Medicina 2025-1.xlsx"
+                    rotaciones_df = parse_mapa_practica(str(mapa_path))
+
+                    st.session_state.results = procesar_refinado(
+                        loader, rotaciones_df, semestre_plan, int(n_estudiantes_refinado),
+                        set_id, semestre,
+                    )
+                    st.session_state.modo_resultado = "refinado"
+                else:
+                    st.session_state.results = procesar_datos(
+                        loader,
+                        set_id,
+                        semestre,
+                        total_estudiantes,
+                        programa_manual,
+                        tipo_est_manual,
+                        tipo_practica_manual,
+                    )
+                    st.session_state.modo_resultado = "agregado"
 
             if st.session_state.results:
                 st.success("✅ Optimización completada")
@@ -933,37 +1174,76 @@ def main():
     # Resultados en la misma página
     if st.session_state.results:
         st.markdown("---")
-        st.header("📊 Resultados")
         results = st.session_state.results
+        modo_res = st.session_state.get("modo_resultado", "agregado")
 
-        render_results_summary(results)
+        if modo_res == "refinado":
+            st.header("📊 Resultados — Modelo Refinado")
 
-        if results["asignaciones"].empty:
-            st.error("❌ No hubo asignaciones en esta corrida.")
-            st.info(
-                "Revisa el panel de debug: si `pares_factibles` es 0, suele indicar desalineación entre cupos y configuración manual; "
-                "si `pares_con_costo` es muy bajo, faltan costos por institución o tipo de práctica."
-            )
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Semestre", results["semestre_plan"])
+            col2.metric("Estudiantes", results["total_estudiantes"])
+            col3.metric("Grupos formados", results["n_grupos"])
+            col4.metric("Asignaturas", len(results["asignaturas"]))
+
+            st.subheader("👥 Grupos formados")
+            st.dataframe(results["grupos"], use_container_width=True, hide_index=True)
+
+            st.subheader("📋 Asignaciones por grupo, asignatura y rotación")
+            df_asig = results["asignaciones"]
+            if not df_asig.empty:
+                display_cols = ["Grupo", "Tamano_Grupo", "Asignatura", "Rotacion", "ID_Institucion", "Institucion", "Estudiantes", "Score_IPS"]
+                display_cols = [c for c in display_cols if c in df_asig.columns]
+                st.dataframe(df_asig[display_cols], use_container_width=True, hide_index=True)
+
+                import plotly.express as px
+                for asig in results["asignaturas"]:
+                    st.markdown(f"**{asig}**")
+                    df_a = df_asig[df_asig["Asignatura"] == asig]
+                    if not df_a.empty:
+                        label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
+                        fig = px.bar(
+                            df_a,
+                            x=label_col,
+                            y="Estudiantes",
+                            color="Grupo",
+                            barmode="stack",
+                            title=f"Distribución en {asig}",
+                        )
+                        fig.update_xaxes(tickangle=45)
+                        st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("No se encontraron asignaciones factibles.")
         else:
-            st.success("✅ Se encontraron asignaciones factibles y se muestran abajo.")
+            st.header("📊 Resultados")
+            render_results_summary(results)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            render_asignaciones_table(results["asignaciones"])
-        with col2:
-            render_demanda_vs_asignacion(results["summary"])
+            if results["asignaciones"].empty:
+                st.error("❌ No hubo asignaciones en esta corrida.")
+                st.info(
+                    "Revisa el panel de debug: si `pares_factibles` es 0, suele indicar desalineación entre cupos y configuración manual; "
+                    "si `pares_con_costo` es muy bajo, faltan costos por institución o tipo de práctica."
+                )
+            else:
+                st.success("✅ Se encontraron asignaciones factibles y se muestran abajo.")
 
-        render_capacidad_chart(results["util"])
-        render_debug_info(results["debug"])
+            col1, col2 = st.columns(2)
+            with col1:
+                render_asignaciones_table(results["asignaciones"])
+            with col2:
+                render_demanda_vs_asignacion(results["summary"])
 
-        st.header("📥 Descargar Resultados")
-        excel_bytes = generar_excel_resultados(results)
-        st.download_button(
-            label="📊 Descargar resultados (Excel)",
-            data=excel_bytes,
-            file_name="asignaciones_optimizacion.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+            render_capacidad_chart(results["util"])
+            render_debug_info(results["debug"])
+
+            st.header("📥 Descargar Resultados")
+            excel_bytes = generar_excel_resultados(results)
+            st.download_button(
+                label="📊 Descargar resultados (Excel)",
+                data=excel_bytes,
+                file_name="asignaciones_optimizacion.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
     # Ayuda siempre disponible abajo
     st.markdown("---")
