@@ -68,6 +68,7 @@ def parse_mapa_practica(path: str = EXCEL_PATH) -> pd.DataFrame:
     df[0] = df[0].ffill()
     df[1] = df[1].ffill()
     df[2] = df[2].ffill()
+    df[3] = df[3].ffill()
 
     df = df[df[0].isin(PERIOD_MAP)]
 
