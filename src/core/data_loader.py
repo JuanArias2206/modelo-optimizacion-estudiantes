@@ -56,6 +56,35 @@ class DataLoader:
             except:
                 logger.warning("⚠ Demanda no encontrada - usando placeholder")
                 self.demanda = None
+
+            try:
+                rot_raw = pd.read_excel(self.excel_path, sheet_name="06_Rotaciones")
+                rot_raw = rot_raw.rename(columns={
+                    "Semestre_Plan": "Semestre_plan",
+                    "Cupo_Maximo": "Cupo",
+                })
+                if "Semestre_plan" in rot_raw.columns:
+                    rot_raw["Semestre_plan"] = pd.to_numeric(rot_raw["Semestre_plan"], errors="coerce")
+                    rot_raw = rot_raw.dropna(subset=["Semestre_plan"])
+                    rot_raw["Semestre_plan"] = rot_raw["Semestre_plan"].astype(int)
+                if "Cupo" in rot_raw.columns:
+                    rot_raw["Cupo"] = pd.to_numeric(rot_raw["Cupo"], errors="coerce").fillna(0).astype(int)
+                self.rotaciones = rot_raw
+                logger.info(f"✓ 06_Rotaciones: {len(self.rotaciones)} registros")
+            except:
+                logger.warning("⚠ 06_Rotaciones no encontrada")
+                self.rotaciones = None
+
+            try:
+                self.demanda_semestres = pd.read_excel(self.excel_path, sheet_name="07_Demanda_Semestres")
+                if "Semestre_Plan" in self.demanda_semestres.columns:
+                    self.demanda_semestres["Semestre_Plan"] = pd.to_numeric(
+                        self.demanda_semestres["Semestre_Plan"], errors="coerce"
+                    ).astype(int)
+                logger.info(f"✓ 07_Demanda_Semestres: {len(self.demanda_semestres)} semestres")
+            except:
+                logger.warning("⚠ 07_Demanda_Semestres no encontrada")
+                self.demanda_semestres = None
             
             logger.info(f"✓ 01_Oferta: {self.oferta.shape[0]} instituciones")
             logger.info(f"✓ 03_Calidad: {self.calidad.shape[0]} registros")

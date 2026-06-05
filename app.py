@@ -23,7 +23,7 @@ from src.visualization import (
     render_results_summary, render_asignaciones_table, render_capacidad_chart,
     render_demanda_vs_asignacion, render_debug_info
 )
-from scripts.parse_mapa_practica import parse_mapa_practica, get_group_constraints
+from scripts.parse_mapa_practica import get_group_constraints
 
 # Configurar logging
 logger = setup_logging("logs", "debug_logs")
@@ -859,14 +859,12 @@ def procesar_datos(
 
 def procesar_refinado(
     loader: DataLoader,
-    rotaciones_df: pd.DataFrame,
     semestre_plan: int,
     n_estudiantes: int,
     set_id: str,
     semestre_vigencia: str,
 ) -> Optional[Dict]:
     try:
-        loader.load_rotaciones(rotaciones_df)
         loader.validate_pesas()
         weights, crit_type = loader.get_ponderaciones_dict()
 
@@ -1146,14 +1144,15 @@ def main():
                 loader.load_all()
 
                 if modo == "Refinado por semestre":
-                    mapa_path = Path(__file__).parent / "data" / "info_reunion_refinacion_modelo" / "Mapa de practica general Medicina 2025-1.xlsx"
-                    rotaciones_df = parse_mapa_practica(str(mapa_path))
-
-                    st.session_state.results = procesar_refinado(
-                        loader, rotaciones_df, semestre_plan, int(n_estudiantes_refinado),
-                        set_id, semestre,
-                    )
-                    st.session_state.modo_resultado = "refinado"
+                    if loader.rotaciones is None or loader.rotaciones.empty:
+                        st.error("❌ El archivo no contiene la hoja '06_Rotaciones'. Usa Plantilla_V4_Refinada.xlsx")
+                        st.session_state.results = None
+                    else:
+                        st.session_state.results = procesar_refinado(
+                            loader, semestre_plan, int(n_estudiantes_refinado),
+                            set_id, semestre,
+                        )
+                        st.session_state.modo_resultado = "refinado"
                 else:
                     st.session_state.results = procesar_datos(
                         loader,
