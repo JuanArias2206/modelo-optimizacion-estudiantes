@@ -25,6 +25,7 @@ class DataLoader:
         self.costos = None
         self.ponderaciones = None
         self.demanda = None
+        self.rotaciones = None
 
     @staticmethod
     def _to_float(series: pd.Series) -> pd.Series:
@@ -143,3 +144,39 @@ class DataLoader:
             costos_copy["%_Contraprestacion_Matricula (0-100)"], errors="coerce"
         )
         return costos_copy["pct_contra"].notna().sum() > 0
+
+    def load_rotaciones(self, rotaciones_df: pd.DataFrame) -> None:
+        """Carga datos de rotaciones desde DataFrame parseado del Mapa de Práctica."""
+        self.rotaciones = rotaciones_df.copy()
+        self.rotaciones["ID_Institucion"] = self.rotaciones["ID_Institucion"].astype(str)
+        logger.info(
+            f"Rotaciones cargadas: {len(self.rotaciones)} registros, "
+            f"semestres {sorted(self.rotaciones['Semestre_plan'].unique())}"
+        )
+
+    def get_rotaciones_dict(self, semestre_plan: int) -> dict:
+        """Retorna {(asignatura, rotacion, id_institucion): cupo} para un semestre."""
+        df = self.rotaciones[self.rotaciones["Semestre_plan"] == semestre_plan].copy()
+        cap = {}
+        for _, r in df.iterrows():
+            key = (r["Asignatura"], r["Rotacion"], str(r["ID_Institucion"]))
+            cap[key] = int(r["Cupo"])
+        return cap
+
+    def get_asignaturas_rotaciones(self, semestre_plan: int) -> dict:
+        """Retorna {asignatura: [rotaciones]} para un semestre."""
+        df = self.rotaciones[self.rotaciones["Semestre_plan"] == semestre_plan].copy()
+        result = {}
+        for asig in df["Asignatura"].unique():
+            rots = df[df["Asignatura"] == asig]["Rotacion"].unique().tolist()
+            result[asig] = rots
+        return result
+
+    def get_ips_for_rotacion(self, semestre_plan: int, asignatura: str, rotacion: str) -> list:
+        """Retorna lista de (id_institucion, cupo) para una rotación específica."""
+        df = self.rotaciones[
+            (self.rotaciones["Semestre_plan"] == semestre_plan)
+            & (self.rotaciones["Asignatura"] == asignatura)
+            & (self.rotaciones["Rotacion"] == rotacion)
+        ].copy()
+        return [(str(r["ID_Institucion"]), int(r["Cupo"])) for _, r in df.iterrows()]
