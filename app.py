@@ -1468,7 +1468,7 @@ def main():
                                     title=f"Calendario: {rot}",
                                     barmode="group",
                                 )
-                                st.plotly_chart(fig, use_container_width=True)
+                                st.plotly_chart(fig, use_container_width=True, key=f"cal_{asig}_{rot}")
                 else:
                     import plotly.express as px
                     for asig in results["asignaturas"]:
@@ -1496,7 +1496,7 @@ def main():
                                 title=f"Distribución en {asig}",
                             )
                             fig.update_xaxes(tickangle=45, categoryorder="array", categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None)
-                            st.plotly_chart(fig, use_container_width=True)
+                            st.plotly_chart(fig, use_container_width=True, key=f"dist_{asig}")
             else:
                 st.warning("No se encontraron asignaciones factibles.")
         else:
