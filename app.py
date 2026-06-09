@@ -16,7 +16,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 
 # Imports locales
 from src.core import DataLoader, Optimizer, ScoreCalculator
-from src.core.optimizer import GroupOptimizer, TemporalGroupOptimizer
+from src.core.optimizer import GroupOptimizer
 from src.utils import setup_logging
 from src.visualization import (
     render_header, render_upload_section, render_config_section,
@@ -1130,126 +1130,6 @@ def _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type):
     return weights_norm, S, s_ids, loader.costos
 
 
-def procesar_refinado_con_calendario(
-    loader: DataLoader,
-    semestre_plan: int,
-    n_estudiantes: int,
-    set_id: str,
-    semestre_vigencia: str,
-) -> Optional[Dict]:
-    """Procesa con calendario: asigna grupos a IPS por rotación y período."""
-    try:
-        loader.validate_pesas()
-        weights, crit_type = loader.get_ponderaciones_dict()
-
-        pesos_activos = sum(float(v) for v in weights.values())
-        if abs(pesos_activos - 1.0) > 1e-6:
-            raise ValueError(
-                f"Los pesos activos del set seleccionado deben sumar 1.0; suma actual={pesos_activos:.6f}"
-            )
-
-        cap_dict = loader.get_rotaciones_dict(semestre_plan)
-        ar_dict = loader.get_asignaturas_rotaciones(semestre_plan)
-        constraints = get_group_constraints(semestre_plan)
-        min_g, max_g = constraints["min"], constraints["max"]
-
-        if n_estudiantes < min_g:
-            st.error(f"Se necesitan al menos {min_g} estudiantes para formar un grupo.")
-            return None
-
-        cal_asig = loader.calendario[loader.calendario["Semestre_Plan"] == semestre_plan].copy() if loader.calendario is not None else pd.DataFrame()
-        if cal_asig.empty:
-            st.warning(f"⚠ No hay calendario definido para Semestre {semestre_plan} en la hoja 08_Calendario. Se usará 1 período por defecto.")
-            cal_asig = None
-
-        weights_norm, S, s_ids, costos = _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type)
-
-        all_ips = set()
-        for (a, r, j) in cap_dict:
-            all_ips.add(j)
-
-        scores = {}
-        for j in all_ips:
-            if j not in s_ids:
-                scores[j] = 0.0
-                continue
-            score = 0.0
-            for k, w in weights_norm.items():
-                if w <= 0:
-                    continue
-                if k == "%_Contraprestacion_Matricula":
-                    c = costos.copy(); c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    sk = (1.0 - float(df_c["pct_contra"].iloc[0]) / 100.0) if len(df_c) > 0 and pd.notna(df_c["pct_contra"].iloc[0]) else 0.5
-                elif k == "Cobro_EPP":
-                    c = costos.copy(); c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    sk = (1.0 - float(df_c["Cobro_EPP_num"].iloc[0])) if len(df_c) > 0 else 1.0
-                elif k == "EPP_Exigidos":
-                    c = costos.copy(); c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    if len(df_c) > 0 and "EPP_Exigidos_num" in df_c.columns:
-                        val = df_c["EPP_Exigidos_num"].iloc[0]
-                        sk = 1.0 - float(val) if pd.notna(val) else 0.5
-                    else:
-                        sk = 0.5
-                elif k == "Admiten_Docentes_Externos":
-                    sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
-                else:
-                    col = f"{k}_norm"
-                    sk = S.loc[j, col] if col in S.columns else 0.0
-                    if pd.isna(sk):
-                        sk = 0.0
-                score += w * float(sk)
-            scores[j] = round(score, 4)
-
-        st.write(f"✓ {len(scores)} IPS con score calculado (promedio: {sum(scores.values())/len(scores):.4f})" if scores else "")
-
-        optimizer = TemporalGroupOptimizer(verbose=False)
-        results_df = optimizer.optimize(
-            scores=scores,
-            cap_dict=cap_dict,
-            asignaturas_rotaciones=ar_dict,
-            n_estudiantes=n_estudiantes,
-            min_group=min_g,
-            max_group=max_g,
-            calendario_asignatura=cal_asig,
-        )
-
-        if not results_df.empty and "Institucion" in loader.oferta.columns:
-            oferta_names = loader.oferta[["ID_Institucion", "Institucion"]].copy()
-            oferta_names["ID_Institucion"] = oferta_names["ID_Institucion"].astype(str)
-            results_df["ID_Institucion"] = results_df["ID_Institucion"].astype(str)
-            results_df = results_df.merge(oferta_names, on="ID_Institucion", how="left")
-
-        groups_summary = optimizer.get_groups_summary()
-        calendario_periodos = {}
-        if cal_asig is not None and not cal_asig.empty:
-            for rot in cal_asig["Rotacion"].unique():
-                periodos = cal_asig[cal_asig["Rotacion"] == rot][["Periodo_Num", "Fecha_Inicio", "Fecha_Fin"]].drop_duplicates().sort_values("Periodo_Num")
-                calendario_periodos[rot] = periodos.to_dict("records")
-
-        return {
-            "asignaciones": results_df,
-            "grupos": groups_summary,
-            "total_estudiantes": n_estudiantes,
-            "n_grupos": len(groups_summary),
-            "min_group": min_g,
-            "max_group": max_g,
-            "semestre_plan": semestre_plan,
-            "asignaturas": list(ar_dict.keys()),
-            "obj_value": optimizer.get_objective_value(),
-            "scores": scores,
-            "calendario_periodos": calendario_periodos,
-            "con_calendario": True,
-        }
-
-    except Exception as e:
-        logger.error(f"Error procesando refinado con calendario: {e}")
-        st.error(f"❌ Error: {str(e)}")
-        return None
-
-
 def _render_heatmap_grupo_ips(df_asig, key_suffix=""):
     import plotly.express as px
     if "Institucion" not in df_asig.columns or "Score_IPS" not in df_asig.columns:
@@ -1314,20 +1194,6 @@ def _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix=""):
     fig.add_vline(x=df_q["Costo_%"].median(), line_dash="dot", line_color="gray", opacity=0.5)
     fig.add_hline(y=df_q["Score"].median(), line_dash="dot", line_color="gray", opacity=0.5)
     st.plotly_chart(fig, use_container_width=True, key=f"quadrant_{key_suffix}")
-
-
-def _render_timeline_periodo(df_asig, key_suffix=""):
-    import plotly.express as px
-    if "Periodo" not in df_asig.columns:
-        return
-    df_tl = df_asig.groupby(["Periodo", "Asignatura"])["Estudiantes"].sum().reset_index()
-    if df_tl.empty:
-        return
-    fig = px.area(
-        df_tl, x="Periodo", y="Estudiantes", color="Asignatura",
-        title="Carga de estudiantes por período (línea temporal)",
-    )
-    st.plotly_chart(fig, use_container_width=True, key=f"timeline_{key_suffix}")
 
 
 def _render_gauge_optimo(results, df_asig, key_suffix=""):
@@ -1412,7 +1278,6 @@ def main():
 
     semestre_plan = None
     n_estudiantes_refinado = None
-    usar_calendario = False
 
     if modo == "Refinado por semestre":
         st.subheader("⚙️ Configuración Refinada")
@@ -1457,11 +1322,6 @@ def main():
             )
         st.caption(f"📏 Restricción de grupos: {constraints['min']}-{constraints['max']} estudiantes por grupo")
 
-        usar_calendario = st.checkbox(
-            "📅 Usar calendario (asignar por período)",
-            value=True,
-            help="Si está activo, el modelo asigna grupos a IPS por período (mes/bloque/semana) usando la hoja 08_Calendario. Disponible para todos los semestres 5-10.",
-        )
     else:
         capacidad_total = preview_capacidad(uploaded_file)
         c1, c2, c3 = st.columns(3)
@@ -1491,12 +1351,6 @@ def main():
                     if loader.rotaciones is None or loader.rotaciones.empty:
                         st.error("❌ El archivo no contiene la hoja '06_Rotaciones'. Usa Plantilla_V4_Refinada.xlsx")
                         st.session_state.results = None
-                    elif usar_calendario:
-                        st.session_state.results = procesar_refinado_con_calendario(
-                            loader, semestre_plan, int(n_estudiantes_refinado),
-                            set_id_to_use, semestre,
-                        )
-                        st.session_state.modo_resultado = "refinado_calendario"
                     else:
                         st.session_state.results = procesar_refinado(
                             loader, semestre_plan, int(n_estudiantes_refinado),
@@ -1526,7 +1380,7 @@ def main():
         results = st.session_state.results
         modo_res = st.session_state.get("modo_resultado", "agregado")
 
-        if modo_res in ("refinado", "refinado_calendario"):
+        if modo_res == "refinado":
             st.header("📊 Resultados — Modelo Refinado")
 
             col1, col2, col3, col4 = st.columns(4)
@@ -1535,91 +1389,86 @@ def main():
             col3.metric("Grupos formados", results["n_grupos"])
             col4.metric("Asignaturas", len(results["asignaturas"]))
 
+            df_asig = results["asignaciones"]
+            if not df_asig.empty:
+                scores_dict = results.get("scores", {})
+                if scores_dict:
+                    scores_used = [
+                        s for j, s in scores_dict.items()
+                        if j in df_asig["ID_Institucion"].astype(str).values
+                    ]
+                    if scores_used:
+                        avg_score = sum(scores_used) / len(scores_used)
+                        max_score_ips = max(scores_dict.values())
+                        best_ips_id = max(scores_dict, key=scores_dict.get)
+                        best_ips_name = df_asig[df_asig["ID_Institucion"].astype(str) == best_ips_id]["Institucion"].iloc[0] if not df_asig[df_asig["ID_Institucion"].astype(str) == best_ips_id].empty else best_ips_id
+                        total_est_asig = df_asig["Estudiantes"].sum()
+
+                        st.subheader("📌 Resumen Ejecutivo")
+                        col_r1, col_r2, col_r3, col_r4 = st.columns(4)
+                        col_r1.metric("Score promedio", f"{avg_score:.4f}")
+                        col_r2.metric("Mejor IPS", f"{scores_dict[best_ips_id]:.4f}", help=best_ips_name[:40])
+                        col_r3.metric("Estudiantes asignados", int(total_est_asig))
+                        col_r4.metric("IPS utilizadas", df_asig["ID_Institucion"].nunique())
+
             st.subheader("👥 Grupos formados")
             st.dataframe(results["grupos"], use_container_width=True, hide_index=True)
 
             st.subheader("📋 Asignaciones por grupo, asignatura y rotación")
-            df_asig = results["asignaciones"]
             if not df_asig.empty:
                 display_cols = ["Grupo", "Tamano_Grupo", "Asignatura", "Rotacion", "ID_Institucion", "Institucion", "Estudiantes", "Score_IPS"]
-                if modo_res == "refinado_calendario" and "Periodo" in df_asig.columns:
-                    display_cols.insert(4, "Periodo")
                 display_cols = [c for c in display_cols if c in df_asig.columns]
                 st.dataframe(df_asig[display_cols], use_container_width=True, hide_index=True)
 
-                if modo_res == "refinado_calendario" and "Periodo" in df_asig.columns:
-                    st.subheader("📅 Calendario de asignaciones")
-                    cal_periodos = results.get("calendario_periodos", {})
+                st.subheader("📊 Distribución por Asignatura")
+                import plotly.express as px
+                cols_dist = 1
+                asignaturas_list = list(results["asignaturas"])
+                if len(asignaturas_list) > 1:
+                    cols_dist = 2
+                rows = (len(asignaturas_list) + cols_dist - 1) // cols_dist
+                idx = 0
+                for _ in range(rows):
+                    cols = st.columns(cols_dist)
+                    for c in cols:
+                        if idx < len(asignaturas_list):
+                            asig = asignaturas_list[idx]
+                            df_a = df_asig[df_asig["Asignatura"] == asig]
+                            if not df_a.empty:
+                                label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
+                                if "Cirugía" in asig or "Especialidades Quirúrgicas" in asig or "Quirúrgicas" in asig:
+                                    ips_order = (
+                                        df_a.groupby(label_col)["Score_IPS"]
+                                        .first()
+                                        .sort_values(ascending=False)
+                                        .index
+                                        .tolist()
+                                    )
+                                    df_a = df_a.copy()
+                                    df_a[label_col] = pd.Categorical(df_a[label_col], categories=ips_order, ordered=True)
+                                    df_a = df_a.sort_values(label_col)
+                                with c:
+                                    fig = px.bar(
+                                        df_a,
+                                        x=label_col,
+                                        y="Estudiantes",
+                                        color="Grupo",
+                                        barmode="stack",
+                                        title=f"📊 {asig}",
+                                    )
+                                    fig.update_xaxes(
+                                        tickangle=45,
+                                        categoryorder="array",
+                                        categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None,
+                                    )
+                                    st.plotly_chart(fig, use_container_width=True, key=f"dist_{asig}")
+                            idx += 1
+                        else:
+                            break
 
-                    import plotly.express as px
-                    for asig in results["asignaturas"]:
-                        st.markdown(f"**{asig}**")
-                        df_a = df_asig[df_asig["Asignatura"] == asig]
-                        if df_a.empty:
-                            continue
-
-                        for rot in df_a["Rotacion"].unique():
-                            df_r = df_a[df_a["Rotacion"] == rot]
-                            st.caption(f"Rotación: {rot}")
-                            pivot = df_r.pivot_table(
-                                values="Estudiantes",
-                                index="Grupo",
-                                columns="Periodo",
-                                aggfunc="sum",
-                                fill_value=0,
-                            )
-                            if not pivot.empty:
-                                label_ips = "Institucion" if "Institucion" in df_r.columns else "ID_Institucion"
-                                ips_per_group = df_r.groupby("Grupo")[label_ips].first()
-                                pivot.insert(0, "IPS", pivot.index.map(ips_per_group))
-                                period_cols = [c for c in pivot.columns if c != "IPS"]
-                                pivot["Total"] = pivot[period_cols].sum(axis=1)
-                                st.dataframe(pivot, use_container_width=True)
-
-                                fig = px.bar(
-                                    df_r,
-                                    x="Periodo",
-                                    y="Estudiantes",
-                                    color="Grupo",
-                                    title=f"Calendario: {rot}",
-                                    barmode="group",
-                                )
-                                st.plotly_chart(fig, use_container_width=True, key=f"cal_{asig}_{rot}")
-                else:
-                    import plotly.express as px
-                    for asig in results["asignaturas"]:
-                        st.markdown(f"**{asig}**")
-                        df_a = df_asig[df_asig["Asignatura"] == asig]
-                        if not df_a.empty:
-                            label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
-                            if "Cirugía" in asig or "Especialidades Quirúrgicas" in asig or "Quirúrgicas" in asig:
-                                ips_order = (
-                                    df_a.groupby(label_col)["Score_IPS"]
-                                    .first()
-                                    .sort_values(ascending=False)
-                                    .index
-                                    .tolist()
-                                )
-                                df_a = df_a.copy()
-                                df_a[label_col] = pd.Categorical(df_a[label_col], categories=ips_order, ordered=True)
-                                df_a = df_a.sort_values(label_col)
-                            fig = px.bar(
-                                df_a,
-                                x=label_col,
-                                y="Estudiantes",
-                                color="Grupo",
-                                barmode="stack",
-                                title=f"Distribución en {asig}",
-                            )
-                            fig.update_xaxes(tickangle=45, categoryorder="array", categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None)
-                            st.plotly_chart(fig, use_container_width=True, key=f"dist_{asig}")
-
-                st.subheader("📈 Visualizaciones Avanzadas")
-                import plotly.graph_objects as go
+                st.subheader("📈 Análisis Avanzado")
                 _render_heatmap_grupo_ips(df_asig, key_suffix="avanz")
                 _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix="avanz")
-                if modo_res == "refinado_calendario" and "Periodo" in df_asig.columns:
-                    _render_timeline_periodo(df_asig, key_suffix="avanz")
                 _render_gauge_optimo(results, df_asig, key_suffix="avanz")
             else:
                 st.warning("No se encontraron asignaciones factibles.")

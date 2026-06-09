@@ -26,7 +26,6 @@ class DataLoader:
         self.ponderaciones = None
         self.demanda = None
         self.rotaciones = None
-        self.calendario = None
 
     @staticmethod
     def _to_float(series: pd.Series) -> pd.Series:
@@ -94,25 +93,6 @@ class DataLoader:
                 logger.warning("⚠ 07_Demanda_Semestres no encontrada")
                 self.demanda_semestres = None
 
-            try:
-                cal = pd.read_excel(self.excel_path, sheet_name="08_Calendario")
-                if "Semestre_Plan" in cal.columns:
-                    cal["Semestre_Plan"] = pd.to_numeric(cal["Semestre_Plan"], errors="coerce").astype(int)
-                if "Periodo_Num" in cal.columns:
-                    cal["Periodo_Num"] = pd.to_numeric(cal["Periodo_Num"], errors="coerce").astype(int)
-                if "ID_Institucion" in cal.columns:
-                    cal["ID_Institucion"] = (
-                        pd.to_numeric(cal["ID_Institucion"], errors="coerce")
-                        .fillna(0)
-                        .astype(int)
-                        .astype(str)
-                    )
-                self.calendario = cal
-                logger.info(f"✓ 08_Calendario: {len(self.calendario)} períodos")
-            except:
-                logger.warning("⚠ 08_Calendario no encontrada")
-                self.calendario = None
-            
             logger.info(f"✓ 01_Oferta: {self.oferta.shape[0]} instituciones")
             logger.info(f"✓ 03_Calidad: {self.calidad.shape[0]} registros")
             logger.info(f"✓ 02_Oferta_x_Programa: {self.cupos.shape[0]} cupos")
@@ -237,33 +217,3 @@ class DataLoader:
         ].copy()
         return [(str(r["ID_Institucion"]), int(r["Cupo"])) for _, r in df.iterrows()]
 
-    def has_calendario(self) -> bool:
-        """Retorna True si hay datos de calendario cargados."""
-        return self.calendario is not None and not self.calendario.empty
-
-    def get_calendario_asignatura(self, semestre_plan: int, asignatura: str) -> pd.DataFrame:
-        """Retorna los períodos del calendario para una asignatura específica."""
-        if self.calendario is None:
-            return pd.DataFrame()
-        return self.calendario[
-            (self.calendario["Semestre_Plan"] == semestre_plan)
-            & (self.calendario["Asignatura"] == asignatura)
-        ].copy()
-
-    def get_periodos_count(self, semestre_plan: int, asignatura: str) -> int:
-        """Retorna el número de períodos distintos para una asignatura."""
-        if self.calendario is None:
-            return 0
-        df = self.get_calendario_asignatura(semestre_plan, asignatura)
-        if df.empty:
-            return 0
-        return int(df["Periodo_Num"].nunique())
-
-    def get_origen_asignatura(self, semestre_plan: int, asignatura: str) -> str:
-        """Retorna 'simultanea' o 'secuencial' según el calendario."""
-        if self.calendario is None:
-            return "simultanea"
-        df = self.get_calendario_asignatura(semestre_plan, asignatura)
-        if df.empty:
-            return "simultanea"
-        return str(df["Origen"].iloc[0]) if "Origen" in df.columns else "simultanea"
