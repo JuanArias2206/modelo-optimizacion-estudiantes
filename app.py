@@ -1105,7 +1105,7 @@ def main():
 
     if modo == "Refinado por semestre":
         st.subheader("⚙️ Configuración Refinada")
-        col_r1, col_r2 = st.columns(2)
+        col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
             semestre_plan = st.selectbox(
                 "Semestre del plan de estudios",
@@ -1123,6 +1123,26 @@ def main():
                 step=1,
                 help=f"Grupos de {constraints['min']} a {constraints['max']} estudiantes. Techo: 75.",
                 key="n_estudiantes_refinado",
+            )
+        with col_r3:
+            sem_set_map = {
+                5: "SET-SEM5-SaludPublica",
+                6: "SET-SEM6-Psiquiatria",
+                7: "SET-SEM7-MedicinaInterna",
+                8: "SET-SEM8-Pediatria",
+                9: "SET-SEM9-Gineco",
+                10: "SET-SEM10-Cirugia",
+            }
+            default_sem_set = sem_set_map.get(semestre_plan, "SET-MEDICINA")
+            if default_sem_set not in set_options and set_options:
+                default_sem_set = set_options[0]
+            idx_default = set_options.index(default_sem_set) if default_sem_set in set_options else 0
+            set_id_refinado = st.selectbox(
+                f"Set de ponderaciones para Sem {semestre_plan}",
+                options=set_options,
+                index=idx_default,
+                key="set_id_refinado",
+                help="Auto-selecciona el set recomendado para el semestre, pero puedes cambiarlo para comparar.",
             )
         st.caption(f"📏 Restricción de grupos: {constraints['min']}-{constraints['max']} estudiantes por grupo")
     else:
@@ -1146,7 +1166,8 @@ def main():
 
         try:
             with st.spinner("⏳ Procesando..."):
-                loader = DataLoader(tmp_path, set_id, semestre)
+                set_id_to_use = set_id_refinado if modo == "Refinado por semestre" else set_id
+                loader = DataLoader(tmp_path, set_id_to_use, semestre)
                 loader.load_all()
 
                 if modo == "Refinado por semestre":
@@ -1156,7 +1177,7 @@ def main():
                     else:
                         st.session_state.results = procesar_refinado(
                             loader, semestre_plan, int(n_estudiantes_refinado),
-                            set_id, semestre,
+                            set_id_to_use, semestre,
                         )
                         st.session_state.modo_resultado = "refinado"
                 else:
@@ -1207,6 +1228,17 @@ def main():
                     df_a = df_asig[df_asig["Asignatura"] == asig]
                     if not df_a.empty:
                         label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
+                        if "Cirugía" in asig or "Especialidades Quirúrgicas" in asig or "Quirúrgicas" in asig:
+                            ips_order = (
+                                df_a.groupby(label_col)["Score_IPS"]
+                                .first()
+                                .sort_values(ascending=False)
+                                .index
+                                .tolist()
+                            )
+                            df_a = df_a.copy()
+                            df_a[label_col] = pd.Categorical(df_a[label_col], categories=ips_order, ordered=True)
+                            df_a = df_a.sort_values(label_col)
                         fig = px.bar(
                             df_a,
                             x=label_col,
@@ -1215,7 +1247,7 @@ def main():
                             barmode="stack",
                             title=f"Distribución en {asig}",
                         )
-                        fig.update_xaxes(tickangle=45)
+                        fig.update_xaxes(tickangle=45, categoryorder="array", categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None)
                         st.plotly_chart(fig, use_container_width=True)
             else:
                 st.warning("No se encontraron asignaciones factibles.")
