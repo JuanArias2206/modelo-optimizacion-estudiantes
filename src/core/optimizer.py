@@ -397,10 +397,10 @@ class TemporalGroupOptimizer:
                         if (g, a, r, per, j) in y
                     ]
                     if relevant_y:
-                        cap = cap_dict.get((a, r, j), 0)
+                        cap_per = cap_dict.get((a, r, j), 0)
                         self.model += (
-                            lpSum(relevant_y) <= cap,
-                            f"Cap_{a}_{r}_{per}_{j}",
+                            lpSum(relevant_y) <= cap_per,
+                            f"CapPeriodo_{a}_{r}_{per}_{j}",
                         )
 
         for g in range(g_max):
