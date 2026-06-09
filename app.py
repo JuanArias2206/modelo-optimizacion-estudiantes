@@ -1250,6 +1250,124 @@ def procesar_refinado_con_calendario(
         return None
 
 
+def _render_heatmap_grupo_ips(df_asig, key_suffix=""):
+    import plotly.express as px
+    if "Institucion" not in df_asig.columns or "Score_IPS" not in df_asig.columns:
+        return
+    if df_asig["Score_IPS"].nunique() <= 1:
+        return
+    pivot = df_asig.pivot_table(
+        values="Score_IPS", index="Grupo", columns="Institucion", aggfunc="mean"
+    )
+    fig = px.imshow(
+        pivot,
+        color_continuous_scale="RdYlGn",
+        aspect="auto",
+        zmin=0, zmax=1,
+        text_auto=".2f",
+        title="Score promedio por Grupo e IPS",
+    )
+    fig.update_xaxes(tickangle=45)
+    st.plotly_chart(fig, use_container_width=True, key=f"heatmap_score_{key_suffix}")
+
+
+def _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix=""):
+    import plotly.express as px
+    if "scores" not in results or not results["scores"]:
+        return
+
+    costos = loader.costos.copy()
+    if "ID_Institucion" in costos.columns:
+        costos["ID_Institucion"] = costos["ID_Institucion"].astype(str)
+
+    if "%_Contraprestacion_Matricula (0-100)" not in costos.columns:
+        return
+
+    oferta_idx = loader.oferta.copy()
+    if "ID_Institucion" in oferta_idx.columns:
+        oferta_idx["ID_Institucion"] = oferta_idx["ID_Institucion"].astype(str)
+
+    rows = []
+    for j, score in results["scores"].items():
+        df_c = costos[costos["ID_Institucion"] == j]
+        if len(df_c) > 0:
+            pct = df_c["%_Contraprestacion_Matricula (0-100)"].iloc[0]
+            pct = float(pct) if pd.notna(pct) else 50.0
+        else:
+            pct = 50.0
+        inst_match = oferta_idx[oferta_idx["ID_Institucion"] == j]
+        name = inst_match["Institucion"].iloc[0][:30] if len(inst_match) > 0 else j
+        used = df_asig[df_asig["ID_Institucion"].astype(str) == j]["Estudiantes"].sum()
+        rows.append({"ID_IPS": j, "IPS": name, "Score": score, "Costo_%": pct, "Usados": used})
+
+    df_q = pd.DataFrame(rows)
+    if df_q.empty or df_q["Score"].nunique() <= 1:
+        return
+
+    fig = px.scatter(
+        df_q, x="Costo_%", y="Score", size="Usados", color="Score",
+        hover_name="IPS", text="IPS",
+        color_continuous_scale="RdYlGn", size_max=40,
+        title="Frontera Eficiencia: Score vs Costo (tamaño = cupos usados)",
+    )
+    fig.update_traces(textposition="top center", textfont_size=8)
+    fig.add_vline(x=df_q["Costo_%"].median(), line_dash="dot", line_color="gray", opacity=0.5)
+    fig.add_hline(y=df_q["Score"].median(), line_dash="dot", line_color="gray", opacity=0.5)
+    st.plotly_chart(fig, use_container_width=True, key=f"quadrant_{key_suffix}")
+
+
+def _render_timeline_periodo(df_asig, key_suffix=""):
+    import plotly.express as px
+    if "Periodo" not in df_asig.columns:
+        return
+    df_tl = df_asig.groupby(["Periodo", "Asignatura"])["Estudiantes"].sum().reset_index()
+    if df_tl.empty:
+        return
+    fig = px.area(
+        df_tl, x="Periodo", y="Estudiantes", color="Asignatura",
+        title="Carga de estudiantes por período (línea temporal)",
+    )
+    st.plotly_chart(fig, use_container_width=True, key=f"timeline_{key_suffix}")
+
+
+def _render_gauge_optimo(results, df_asig, key_suffix=""):
+    import plotly.graph_objects as go
+    if "scores" not in results or not results["scores"]:
+        return
+    max_score = max(results["scores"].values()) if results["scores"] else 0
+    if max_score <= 0:
+        return
+    obj = results.get("obj_value") or 0
+    total_est = df_asig["Estudiantes"].sum() if not df_asig.empty else 0
+    promedio_actual = obj / total_est if total_est > 0 else 0
+    eficiencia_pct = min((promedio_actual / max_score) * 100, 100) if max_score > 0 else 0
+
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number+delta",
+        value=eficiencia_pct,
+        number={"suffix": "%"},
+        domain={"x": [0, 1], "y": [0, 1]},
+        title={"text": "Eficiencia vs Mejor IPS Disponible"},
+        delta={"reference": 100, "increasing": {"color": "green"}, "decreasing": {"color": "red"}},
+        gauge={
+            "axis": {"range": [0, 100]},
+            "bar": {"color": "darkblue"},
+            "steps": [
+                {"range": [0, 50], "color": "#ffcccc"},
+                {"range": [50, 75], "color": "#ffffcc"},
+                {"range": [75, 100], "color": "#ccffcc"},
+            ],
+            "threshold": {
+                "line": {"color": "green", "width": 4},
+                "thickness": 0.75,
+                "value": 100,
+            },
+        },
+    ))
+    st.plotly_chart(fig, use_container_width=True, key=f"gauge_{key_suffix}")
+    st.caption(f"Score promedio actual: {promedio_actual:.4f} | Mejor score posible: {max_score:.4f}")
+
+
 def main():
     """Función principal"""
     render_header()
@@ -1495,6 +1613,14 @@ def main():
                             )
                             fig.update_xaxes(tickangle=45, categoryorder="array", categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None)
                             st.plotly_chart(fig, use_container_width=True, key=f"dist_{asig}")
+
+                st.subheader("📈 Visualizaciones Avanzadas")
+                import plotly.graph_objects as go
+                _render_heatmap_grupo_ips(df_asig, key_suffix="avanz")
+                _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix="avanz")
+                if modo_res == "refinado_calendario" and "Periodo" in df_asig.columns:
+                    _render_timeline_periodo(df_asig, key_suffix="avanz")
+                _render_gauge_optimo(results, df_asig, key_suffix="avanz")
             else:
                 st.warning("No se encontraron asignaciones factibles.")
         else:
