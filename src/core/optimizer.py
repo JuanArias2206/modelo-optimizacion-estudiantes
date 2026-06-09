@@ -403,6 +403,29 @@ class TemporalGroupOptimizer:
                             f"Cap_{a}_{r}_{per}_{j}",
                         )
 
+        for g in range(g_max):
+            all_periods_set = set()
+            for perts in periodos_asignatura.values():
+                all_periods_set.update(perts)
+            same_period_count = {}
+            for (a, r) in ar_pairs:
+                p_count = len(periodos_asignatura.get(r, []))
+                same_period_count[(a, r)] = p_count
+            if len(set(same_period_count.values())) > 1:
+                for per in sorted(all_periods_set):
+                    terms = []
+                    for (a, r) in ar_pairs:
+                        if per in periodos_asignatura.get(r, []):
+                            valid_ips = ips_by_ar.get((a, r), [])
+                            for j in valid_ips:
+                                if (g, a, r, per, j) in x:
+                                    terms.append(x[(g, a, r, per, j)])
+                    if terms:
+                        self.model += (
+                            lpSum(terms) <= 1,
+                            f"NoOverlap_g{g}_p{per}",
+                        )
+
         solver = PULP_CBC_CMD(msg=self.verbose, timeLimit=time_limit)
         status = self.model.solve(solver)
         logger.info(f"TemporalGroupOptimizer status: {status}")
