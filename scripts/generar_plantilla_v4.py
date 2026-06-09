@@ -173,19 +173,46 @@ for s in sets_ponderaciones:
 ponderaciones = pd.DataFrame(rows_pond)
 print(f"✓ Ponderaciones: {len(ponderaciones)} criterios en {ponderaciones['Set_ID'].nunique()} sets")
 
+calendario_rows = []
+meses = [
+    (1, "2026-01-13", "2026-02-09"),
+    (2, "2026-02-10", "2026-03-09"),
+    (3, "2026-03-10", "2026-04-13"),
+    (4, "2026-04-14", "2026-05-08"),
+    (5, "2026-05-12", "2026-06-05"),
+    (6, "2026-06-09", "2026-07-03"),
+]
+for pract in ["Práctica 1", "Práctica 2", "Práctica 3", "Práctica 4"]:
+    for num, inicio, fin in meses:
+        calendario_rows.append({
+            "Semestre_Plan": 5,
+            "Asignatura": "Salud Pública III",
+            "Rotacion": pract,
+            "Tipo_Tiempo": "mes",
+            "Periodo_Num": num,
+            "Fecha_Inicio": inicio,
+            "Fecha_Fin": fin,
+            "Origen": "simultanea",
+            "Notas": "Grupos rotan cada mes entre las 4 prácticas",
+        })
+
+calendario = pd.DataFrame(calendario_rows)
+print(f"✓ Calendario: {len(calendario)} períodos para Salud Pública III")
+
 with pd.ExcelWriter(SALIDA, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
     rotaciones.to_excel(writer, sheet_name="06_Rotaciones", index=False)
     demanda.to_excel(writer, sheet_name="07_Demanda_Semestres", index=False)
     ponderaciones.to_excel(writer, sheet_name="05_Ponderaciones", index=False, startrow=4)
+    calendario.to_excel(writer, sheet_name="08_Calendario", index=False)
 
-print(f"✓ Hojas actualizadas: 05_Ponderaciones (6 sets), 06_Rotaciones, 07_Demanda_Semestres")
+print(f"✓ Hojas actualizadas: 05_Ponderaciones (6 sets), 06_Rotaciones, 07_Demanda_Semestres, 08_Calendario")
 
 wb = load_workbook(SALIDA)
 
 header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
 header_font = Font(bold=True, color="FFFFFF", size=11)
 
-for sheet_name in ["06_Rotaciones", "07_Demanda_Semestres"]:
+for sheet_name in ["06_Rotaciones", "07_Demanda_Semestres", "08_Calendario"]:
     ws = wb[sheet_name]
     for cell in ws[1]:
         cell.fill = header_fill

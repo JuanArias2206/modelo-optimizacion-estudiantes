@@ -256,3 +256,194 @@ class GroupOptimizer:
             .reset_index()
             .rename(columns={"Tamano_Grupo": "Estudiantes"})
         )
+
+
+class TemporalGroupOptimizer:
+    """Optimización con grupos y calendario: asigna grupos a IPS por rotación y período."""
+
+    def __init__(self, verbose: bool = False):
+        self.verbose = verbose
+        self.model = None
+        self.results = None
+        self.calendario_info = None
+
+    def optimize(
+        self,
+        scores: dict,
+        cap_dict: dict,
+        asignaturas_rotaciones: dict,
+        n_estudiantes: int,
+        min_group: int,
+        max_group: int,
+        calendario_asignatura: pd.DataFrame,
+        time_limit: int = 180,
+    ) -> pd.DataFrame:
+        """
+        calendario_asignatura: DataFrame con columnas Asignatura, Rotacion, Periodo_Num
+        para una asignatura específica. Define en qué períodos está disponible cada rotación.
+        """
+        import math
+
+        g_max = math.ceil(n_estudiantes / min_group)
+
+        ar_pairs = []
+        for asig, rots in asignaturas_rotaciones.items():
+            for rot in rots:
+                ar_pairs.append((asig, rot))
+
+        if calendario_asignatura is None or calendario_asignatura.empty:
+            logger.warning("Sin calendario: usando 1 período por defecto")
+            periodos_asignatura = {ar[1]: [1] for ar in ar_pairs}
+        else:
+            periodos_asignatura = {}
+            for rot in [r for (a, r) in ar_pairs]:
+                perts = calendario_asignatura[
+                    calendario_asignatura["Rotacion"] == rot
+                ]["Periodo_Num"].unique().tolist()
+                periodos_asignatura[rot] = sorted(perts) if len(perts) > 0 else [1]
+
+        self.calendario_info = periodos_asignatura
+        logger.info(f"Calendario por rotación: {periodos_asignatura}")
+
+        ips_by_ar = {}
+        for (a, r, j) in cap_dict:
+            key = (a, r)
+            if key not in ips_by_ar:
+                ips_by_ar[key] = []
+            ips_by_ar[key].append(j)
+
+        all_periods = set()
+        for perts in periodos_asignatura.values():
+            all_periods.update(perts)
+        all_periods = sorted(all_periods)
+
+        self.model = LpProblem("Asignacion_Grupos_Temporal", LpMaximize)
+
+        t = {}
+        z = {}
+        for g in range(g_max):
+            t[g] = LpVariable(f"t_{g}", lowBound=0, cat=LpInteger)
+            z[g] = LpVariable(f"z_{g}", cat="Binary")
+
+        x = {}
+        y = {}
+        for g in range(g_max):
+            for (a, r) in ar_pairs:
+                for per in periodos_asignatura.get(r, [1]):
+                    valid_ips = ips_by_ar.get((a, r), [])
+                    for j in valid_ips:
+                        x[(g, a, r, per, j)] = LpVariable(
+                            f"x_{g}_{a}_{r}_{per}_{j}", cat="Binary"
+                        )
+                        y[(g, a, r, per, j)] = LpVariable(
+                            f"y_{g}_{a}_{r}_{per}_{j}", lowBound=0, cat=LpInteger
+                        )
+
+        self.model += lpSum(
+            scores.get(j, 0.0) * y[(g, a, r, per, j)]
+            for g in range(g_max)
+            for (a, r) in ar_pairs
+            for per in periodos_asignatura.get(r, [1])
+            for j in ips_by_ar.get((a, r), [])
+            if (g, a, r, per, j) in y
+        )
+
+        self.model += lpSum(t[g] for g in range(g_max)) == n_estudiantes, "Total_estudiantes"
+
+        for g in range(g_max):
+            self.model += t[g] >= min_group * z[g], f"Min_size_{g}"
+            self.model += t[g] <= max_group * z[g], f"Max_size_{g}"
+
+        for g in range(g_max):
+            for (a, r) in ar_pairs:
+                for per in periodos_asignatura.get(r, [1]):
+                    valid_ips = ips_by_ar.get((a, r), [])
+                    relevant_x = [
+                        x[(g, a, r, per, j)]
+                        for j in valid_ips
+                        if (g, a, r, per, j) in x
+                    ]
+                    if relevant_x:
+                        self.model += lpSum(relevant_x) == z[g], f"One_IPS_{g}_{a}_{r}_{per}"
+
+        for g in range(g_max):
+            for (a, r) in ar_pairs:
+                for per in periodos_asignatura.get(r, [1]):
+                    valid_ips = ips_by_ar.get((a, r), [])
+                    for j in valid_ips:
+                        if (g, a, r, per, j) not in y:
+                            continue
+                        self.model += (
+                            y[(g, a, r, per, j)] <= max_group * x[(g, a, r, per, j)],
+                            f"BigM_upper_{g}_{a}_{r}_{per}_{j}",
+                        )
+                        self.model += (
+                            y[(g, a, r, per, j)]
+                            >= t[g] - max_group * (1 - x[(g, a, r, per, j)]),
+                            f"BigM_lower_{g}_{a}_{r}_{per}_{j}",
+                        )
+                        self.model += (
+                            y[(g, a, r, per, j)] <= t[g],
+                            f"Y_leq_t_{g}_{a}_{r}_{per}_{j}",
+                        )
+
+        for (a, r) in ar_pairs:
+            for per in periodos_asignatura.get(r, [1]):
+                valid_ips = ips_by_ar.get((a, r), [])
+                for j in valid_ips:
+                    relevant_y = [
+                        y[(g, a, r, per, j)]
+                        for g in range(g_max)
+                        if (g, a, r, per, j) in y
+                    ]
+                    if relevant_y:
+                        cap = cap_dict.get((a, r, j), 0)
+                        self.model += (
+                            lpSum(relevant_y) <= cap,
+                            f"Cap_{a}_{r}_{per}_{j}",
+                        )
+
+        solver = PULP_CBC_CMD(msg=self.verbose, timeLimit=time_limit)
+        status = self.model.solve(solver)
+        logger.info(f"TemporalGroupOptimizer status: {status}")
+
+        results = []
+        for g in range(g_max):
+            if z[g].value() and z[g].value() > 0.5:
+                group_size = int(round(t[g].value()))
+                for (a, r) in ar_pairs:
+                    for per in periodos_asignatura.get(r, [1]):
+                        valid_ips = ips_by_ar.get((a, r), [])
+                        for j in valid_ips:
+                            if (g, a, r, per, j) in y and y[(g, a, r, per, j)].value() and y[(g, a, r, per, j)].value() > 0:
+                                results.append({
+                                    "Grupo": g + 1,
+                                    "Tamano_Grupo": group_size,
+                                    "Asignatura": a,
+                                    "Rotacion": r,
+                                    "Periodo": per,
+                                    "ID_Institucion": j,
+                                    "Estudiantes": int(round(y[(g, a, r, per, j)].value())),
+                                    "Score_IPS": scores.get(j, 0.0),
+                                })
+
+        self.results = pd.DataFrame(results)
+        if not self.results.empty:
+            self.results = self.results.sort_values(
+                ["Grupo", "Asignatura", "Rotacion", "Periodo"]
+            ).reset_index(drop=True)
+
+        return self.results
+
+    def get_objective_value(self) -> float:
+        return self.model.objective.value() if self.model else None
+
+    def get_groups_summary(self) -> pd.DataFrame:
+        if self.results is None or self.results.empty:
+            return pd.DataFrame()
+        return (
+            self.results.groupby("Grupo")["Tamano_Grupo"]
+            .first()
+            .reset_index()
+            .rename(columns={"Tamano_Grupo": "Estudiantes"})
+        )
