@@ -124,6 +124,7 @@ class GroupOptimizer:
         n_estudiantes: int,
         min_group: int,
         max_group: int,
+        time_limit: int = 120,
     ) -> pd.DataFrame:
         import math
 
@@ -133,6 +134,13 @@ class GroupOptimizer:
         for asig, rots in asignaturas_rotaciones.items():
             for rot in rots:
                 ar_pairs.append((asig, rot))
+
+        ips_by_ar = {}
+        for (a, r, j) in cap_dict:
+            key = (a, r)
+            if key not in ips_by_ar:
+                ips_by_ar[key] = []
+            ips_by_ar[key].append(j)
 
         self.model = LpProblem("Asignacion_Grupos", LpMaximize)
 
@@ -146,7 +154,7 @@ class GroupOptimizer:
         y = {}
         for g in range(g_max):
             for (a, r) in ar_pairs:
-                valid_ips = [j for (aa, rr, j) in cap_dict if aa == a and rr == r]
+                valid_ips = ips_by_ar.get((a, r), [])
                 for j in valid_ips:
                     x[(g, a, r, j)] = LpVariable(f"x_{g}_{a}_{r}_{j}", cat="Binary")
                     y[(g, a, r, j)] = LpVariable(f"y_{g}_{a}_{r}_{j}", lowBound=0, cat=LpInteger)
@@ -155,7 +163,7 @@ class GroupOptimizer:
             scores.get(j, 0.0) * y[(g, a, r, j)]
             for g in range(g_max)
             for (a, r) in ar_pairs
-            for j in [jj for (aa, rr, jj) in cap_dict if aa == a and rr == r]
+            for j in ips_by_ar.get((a, r), [])
             if (g, a, r, j) in y
         )
 
@@ -167,14 +175,14 @@ class GroupOptimizer:
 
         for g in range(g_max):
             for (a, r) in ar_pairs:
-                valid_ips = [j for (aa, rr, j) in cap_dict if aa == a and rr == r]
+                valid_ips = ips_by_ar.get((a, r), [])
                 relevant_x = [x[(g, a, r, j)] for j in valid_ips if (g, a, r, j) in x]
                 if relevant_x:
                     self.model += lpSum(relevant_x) == z[g], f"One_IPS_{g}_{a}_{r}"
 
         for g in range(g_max):
             for (a, r) in ar_pairs:
-                valid_ips = [j for (aa, rr, j) in cap_dict if aa == a and rr == r]
+                valid_ips = ips_by_ar.get((a, r), [])
                 for j in valid_ips:
                     if (g, a, r, j) not in y:
                         continue
@@ -192,7 +200,7 @@ class GroupOptimizer:
                     )
 
         for (a, r) in ar_pairs:
-            valid_ips = [j for (aa, rr, j) in cap_dict if aa == a and rr == r]
+            valid_ips = ips_by_ar.get((a, r), [])
             for j in valid_ips:
                 relevant_y = [
                     y[(g, a, r, j)]
@@ -206,7 +214,7 @@ class GroupOptimizer:
                         f"Cap_{a}_{r}_{j}",
                     )
 
-        solver = PULP_CBC_CMD(msg=self.verbose)
+        solver = PULP_CBC_CMD(msg=self.verbose, timeLimit=time_limit)
         status = self.model.solve(solver)
         logger.info(f"GroupOptimizer status: {status}")
 
@@ -215,7 +223,7 @@ class GroupOptimizer:
             if z[g].value() and z[g].value() > 0.5:
                 group_size = int(round(t[g].value()))
                 for (a, r) in ar_pairs:
-                    valid_ips = [j for (aa, rr, j) in cap_dict if aa == a and rr == r]
+                    valid_ips = ips_by_ar.get((a, r), [])
                     for j in valid_ips:
                         if (g, a, r, j) in y and y[(g, a, r, j)].value() and y[(g, a, r, j)].value() > 0:
                             results.append({

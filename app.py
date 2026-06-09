@@ -967,6 +967,9 @@ def procesar_refinado(
         for (a, r, j) in cap_dict:
             all_ips_in_rotaciones.add(j)
 
+        st.write(f"✓ {len(all_ips_in_rotaciones)} IPS únicas en rotaciones")
+        st.write(f"✓ {len(s_ids)} IPS en datos normalizados")
+
         scores = {}
         for j in all_ips_in_rotaciones:
             if j not in s_ids:
@@ -1012,6 +1015,9 @@ def procesar_refinado(
                         sk = 0.0
                 score += w * float(sk)
             scores[j] = round(score, 4)
+
+        st.write(f"✓ Scores calculados para {len(scores)} IPS")
+        st.write(f"  Score promedio: {sum(scores.values())/len(scores):.4f}" if scores else "  Sin scores")
 
         optimizer = GroupOptimizer(verbose=False)
         results_df = optimizer.optimize(

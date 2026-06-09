@@ -69,6 +69,13 @@ class DataLoader:
                     rot_raw["Semestre_plan"] = rot_raw["Semestre_plan"].astype(int)
                 if "Cupo" in rot_raw.columns:
                     rot_raw["Cupo"] = pd.to_numeric(rot_raw["Cupo"], errors="coerce").fillna(0).astype(int)
+                if "ID_Institucion" in rot_raw.columns:
+                    rot_raw["ID_Institucion"] = (
+                        pd.to_numeric(rot_raw["ID_Institucion"], errors="coerce")
+                        .fillna(0)
+                        .astype(int)
+                        .astype(str)
+                    )
                 self.rotaciones = rot_raw
                 logger.info(f"✓ 06_Rotaciones: {len(self.rotaciones)} registros")
             except:

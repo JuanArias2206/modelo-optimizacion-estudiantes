@@ -31,18 +31,14 @@ rotaciones = rotaciones[["Semestre_Plan", "Asignatura", "Rotacion", "ID_Instituc
 
 print(f"✓ Rotaciones 5to-10mo: {len(rotaciones)} registros")
 
-demanda_data = []
-for sem in [5, 6, 7, 8, 9, 10]:
-    demanda_data.append({
-        "Semestre_Plan": sem,
-        "Programa": "Medicina",
-        "Tipo_Estudiante": "Pregrado",
-        "Demanda_Estudiantes": 60,
-        "Grupo_Min": 4 if sem <= 8 else 3,
-        "Grupo_Max": 7 if sem <= 8 else 5,
-        "Techo_Max": 75,
-        "Observaciones": ""
-    })
+demanda_data = [
+    {"Semestre_Plan": 5, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 72, "Grupo_Min": 4, "Grupo_Max": 7, "Techo_Max": 75, "Observaciones": ""},
+    {"Semestre_Plan": 6, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 73, "Grupo_Min": 4, "Grupo_Max": 7, "Techo_Max": 75, "Observaciones": ""},
+    {"Semestre_Plan": 7, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 46, "Grupo_Min": 4, "Grupo_Max": 7, "Techo_Max": 75, "Observaciones": ""},
+    {"Semestre_Plan": 8, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 56, "Grupo_Min": 4, "Grupo_Max": 7, "Techo_Max": 75, "Observaciones": ""},
+    {"Semestre_Plan": 9, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 57, "Grupo_Min": 3, "Grupo_Max": 5, "Techo_Max": 75, "Observaciones": ""},
+    {"Semestre_Plan": 10, "Programa": "Medicina", "Tipo_Estudiante": "Pregrado", "Demanda_Estudiantes": 36, "Grupo_Min": 3, "Grupo_Max": 5, "Techo_Max": 75, "Observaciones": ""},
+]
 demanda = pd.DataFrame(demanda_data)
 
 print(f"✓ Demanda: {len(demanda)} semestres")

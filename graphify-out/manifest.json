@@ -1,0 +1,102 @@
+{
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/generar_presentacion.py": {
+    "mtime": 1780499362.6424584,
+    "ast_hash": "fdf05b804a7979fcc05e947d8ba76959",
+    "semantic_hash": "fdf05b804a7979fcc05e947d8ba76959"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/app.py": {
+    "mtime": 1771907610.765263,
+    "ast_hash": "7134350072a0669fb5984639472c2bea",
+    "semantic_hash": "7134350072a0669fb5984639472c2bea"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/scripts/debug_tipos.py": {
+    "mtime": 1771875468.797361,
+    "ast_hash": "833ed8fc4d0ea9ae4e14ade35d7d5c9c",
+    "semantic_hash": "833ed8fc4d0ea9ae4e14ade35d7d5c9c"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/scripts/debug_merge.py": {
+    "mtime": 1771875468.7972014,
+    "ast_hash": "393777c4ba1ac9302977def3031ce139",
+    "semantic_hash": "393777c4ba1ac9302977def3031ce139"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/scripts/debug_cupos.py": {
+    "mtime": 1771875468.79719,
+    "ast_hash": "6d29e5f7219d73c48dbb99772fb9322a",
+    "semantic_hash": "6d29e5f7219d73c48dbb99772fb9322a"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/scripts/diagn\u00f3stico.py": {
+    "mtime": 1771875468.7971964,
+    "ast_hash": "c086c053409689b4460af0ed99ed1a3d",
+    "semantic_hash": "c086c053409689b4460af0ed99ed1a3d"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/scripts/modelo_v1.py": {
+    "mtime": 1771900823.6628826,
+    "ast_hash": "3f34dbb8817d2a206382801527838e0c",
+    "semantic_hash": "3f34dbb8817d2a206382801527838e0c"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/visualization/__init__.py": {
+    "mtime": 1771907603.149256,
+    "ast_hash": "1f64105fc36381728acd6fcd009fa7d6",
+    "semantic_hash": "1f64105fc36381728acd6fcd009fa7d6"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/core/data_loader.py": {
+    "mtime": 1771875468.7974079,
+    "ast_hash": "cb0256fe61b808eb3e8029257ab2a607",
+    "semantic_hash": "cb0256fe61b808eb3e8029257ab2a607"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/core/__init__.py": {
+    "mtime": 1771875468.7974086,
+    "ast_hash": "b9ddf71b76ff918fabc7b05108736a33",
+    "semantic_hash": "b9ddf71b76ff918fabc7b05108736a33"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/core/calculator.py": {
+    "mtime": 1771875468.7974095,
+    "ast_hash": "425b68e69901d294bfabc635022376e7",
+    "semantic_hash": "425b68e69901d294bfabc635022376e7"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/core/optimizer.py": {
+    "mtime": 1771875468.79744,
+    "ast_hash": "a4aa1d4bf53c2394580129c92fad56ce",
+    "semantic_hash": "a4aa1d4bf53c2394580129c92fad56ce"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/src/utils/__init__.py": {
+    "mtime": 1771875468.797432,
+    "ast_hash": "c1c54288ea03fd011ce438b4382fe0c6",
+    "semantic_hash": "c1c54288ea03fd011ce438b4382fe0c6"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/GU\u00cdA_LLENADO_PLANTILLA.md": {
+    "mtime": 1771875468.7973816,
+    "ast_hash": "c1ee4cc3fbf8f2f043ca0a18cc5e8dc2",
+    "semantic_hash": "c1ee4cc3fbf8f2f043ca0a18cc5e8dc2"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/ESTRUCTURA_PROYECTO.md": {
+    "mtime": 1771875468.8052337,
+    "ast_hash": "b848efaeffc15cff1d18ad6c73fb2532",
+    "semantic_hash": "b848efaeffc15cff1d18ad6c73fb2532"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/requirements.txt": {
+    "mtime": 1771891373.2139053,
+    "ast_hash": "4ed3e2d6ad917445d84cfe746f7dba11",
+    "semantic_hash": "4ed3e2d6ad917445d84cfe746f7dba11"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/INICIO_RAPIDO.md": {
+    "mtime": 1771875468.8052568,
+    "ast_hash": "3030ee4a661a3dd8e5483897da25ed1a",
+    "semantic_hash": "3030ee4a661a3dd8e5483897da25ed1a"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/AN\u00c1LISIS_RESULTADOS.md": {
+    "mtime": 1771875468.7973912,
+    "ast_hash": "a29f889323c282c58ba8858f7b4df5b7",
+    "semantic_hash": "a29f889323c282c58ba8858f7b4df5b7"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/README.md": {
+    "mtime": 1771875468.805208,
+    "ast_hash": "5c38da0da8542e1cd43762ce295a7ebe",
+    "semantic_hash": "5c38da0da8542e1cd43762ce295a7ebe"
+  },
+  "/Users/juanmanuelarias/Documents/trabajo/javeriana/modelo_opt_oficina_practicas/salida_modelo.txt": {
+    "mtime": 1771441422.1546853,
+    "ast_hash": "fe8f3b7538e8f2ef13c5aeff1008b927",
+    "semantic_hash": "fe8f3b7538e8f2ef13c5aeff1008b927"
+  }
+}
