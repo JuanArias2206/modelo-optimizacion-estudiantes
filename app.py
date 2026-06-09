@@ -1159,7 +1159,7 @@ def procesar_refinado_con_calendario(
 
         cal_asig = loader.calendario[loader.calendario["Semestre_Plan"] == semestre_plan].copy() if loader.calendario is not None else pd.DataFrame()
         if cal_asig.empty:
-            st.warning("⚠ No hay calendario para este semestre. Se usará 1 período por defecto.")
+            st.warning(f"⚠ No hay calendario definido para Semestre {semestre_plan} en la hoja 08_Calendario. Se usará 1 período por defecto.")
             cal_asig = None
 
         weights_norm, S, s_ids, costos = _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type)
@@ -1341,11 +1341,9 @@ def main():
 
         usar_calendario = st.checkbox(
             "📅 Usar calendario (asignar por período)",
-            value=(semestre_plan == 5),
-            help="Si está activo, el modelo asigna grupos a IPS por período (mes/bloque/semana) usando la hoja 08_Calendario. Por ahora solo Salud Pública III (Sem 5) tiene calendario definido.",
+            value=True,
+            help="Si está activo, el modelo asigna grupos a IPS por período (mes/bloque/semana) usando la hoja 08_Calendario. Disponible para todos los semestres 5-10.",
         )
-        if usar_calendario and semestre_plan != 5:
-            st.warning(f"⚠ El calendario solo está definido para Semestre 5 (Salud Pública III). Para Sem {semestre_plan} se usará 1 período por defecto.")
     else:
         capacidad_total = preview_capacidad(uploaded_file)
         c1, c2, c3 = st.columns(3)

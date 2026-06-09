@@ -182,22 +182,60 @@ meses = [
     (5, "2026-05-12", "2026-06-05"),
     (6, "2026-06-09", "2026-07-03"),
 ]
-for pract in ["Práctica 1", "Práctica 2", "Práctica 3", "Práctica 4"]:
-    for num, inicio, fin in meses:
-        calendario_rows.append({
-            "Semestre_Plan": 5,
-            "Asignatura": "Salud Pública III",
-            "Rotacion": pract,
-            "Tipo_Tiempo": "mes",
-            "Periodo_Num": num,
-            "Fecha_Inicio": inicio,
-            "Fecha_Fin": fin,
-            "Origen": "simultanea",
-            "Notas": "Grupos rotan cada mes entre las 4 prácticas",
-        })
+
+configuracion_calendario = {
+    5: {
+        "Salud Pública III": ("simultanea", ["Práctica 1", "Práctica 2", "Práctica 3", "Práctica 4"]),
+        "Semiología": ("simultanea", ["Práctica 4"]),
+    },
+    6: {
+        "Psiquiatría": ("simultanea", ["Consulta Externa", "Hospitalización", "Hospital Día", "Urgencias", "Abuso SPA", "Infantil", "Enlace"]),
+        "Medicina Interna I": ("simultanea", ["Enlace"]),
+    },
+    7: {
+        "Medicina Interna II": ("secuencial", ["Hospitalización", "Urgencias", "Geriatría", "Cardiología", "Dermatología", "Neurología"]),
+    },
+    8: {
+        "Pediatría": ("secuencial", ["Consulta Externa", "Urgencias", "Hospitalización 1", "Hospitalización 2", "Recién Nacidos", "Canguro"]),
+    },
+    9: {
+        "Ginecobstetricia": ("secuencial", ["Partos", "Alto Riesgo Obstétrico", "Consulta Externa", "Control Prenatal"]),
+        "Medicina Legal": ("simultanea", ["Patología", "Clínica"]),
+        "Anestesia": ("simultanea", ["Clínica"]),
+        "Urología": ("simultanea", ["Clínica"]),
+    },
+    10: {
+        "Cirugía General": ("secuencial", ["Rotación 1", "Rotación 2", "Rotación 3"]),
+        "Especialidades Quirúrgicas": ("secuencial", ["Ortopedia", "Oftalmología", "Otorrinolaringología"]),
+        "Medicina de Urgencias": ("simultanea", ["Práctica"]),
+        "Medicina Familiar Ambulatoria": ("simultanea", ["Práctica"]),
+    },
+}
+
+for sem, asignaturas in configuracion_calendario.items():
+    for asig, (origen, rots) in asignaturas.items():
+        for rot in rots:
+            for num, inicio, fin in meses:
+                notas = ""
+                if origen == "simultanea":
+                    notas = f"Rotación disponible en todos los períodos; grupos hacen esta rotación en paralelo"
+                else:
+                    duracion = 6 // len(rots) if len(rots) > 0 else 6
+                    notas = f"Rotación secuencial: {rot} en períodos {((rots.index(rot))*duracion+1)}-{(rots.index(rot)+1)*duracion} (sugerencia, operador ajusta)"
+                calendario_rows.append({
+                    "Semestre_Plan": sem,
+                    "Asignatura": asig,
+                    "Rotacion": rot,
+                    "Tipo_Tiempo": "mes",
+                    "Periodo_Num": num,
+                    "Fecha_Inicio": inicio,
+                    "Fecha_Fin": fin,
+                    "Origen": origen,
+                    "Notas": notas,
+                })
 
 calendario = pd.DataFrame(calendario_rows)
-print(f"✓ Calendario: {len(calendario)} períodos para Salud Pública III")
+print(f"✓ Calendario: {len(calendario)} períodos para semestres 5-10")
 
 with pd.ExcelWriter(SALIDA, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
     rotaciones.to_excel(writer, sheet_name="06_Rotaciones", index=False)
