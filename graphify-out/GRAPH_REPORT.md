@@ -1,114 +1,140 @@
-# Graph Report - .  (2026-06-03)
+# Graph Report - .  (2026-06-10)
 
 ## Corpus Check
-- Corpus is ~13,690 words - fits in a single context window. You may not need a graph.
+- Corpus is ~20,116 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 147 nodes · 167 edges · 22 communities (13 shown, 9 thin omitted)
-- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.76)
+- 224 nodes · 257 edges · 35 communities (18 shown, 17 thin omitted)
+- Extraction: 84% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 39 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Main Application Logic|Main Application Logic]]
-- [[_COMMUNITY_Project Overview|Project Overview]]
-- [[_COMMUNITY_Data Loading Module|Data Loading Module]]
-- [[_COMMUNITY_Streamlit UI Components|Streamlit UI Components]]
-- [[_COMMUNITY_MILP Optimizer|MILP Optimizer]]
-- [[_COMMUNITY_PPTX Generator|PPTX Generator]]
-- [[_COMMUNITY_Score Calculator|Score Calculator]]
-- [[_COMMUNITY_Utility Functions|Utility Functions]]
-- [[_COMMUNITY_Data Validation|Data Validation]]
-- [[_COMMUNITY_Min-Max Benefit|Min-Max Benefit]]
-- [[_COMMUNITY_Score Normalization|Score Normalization]]
-- [[_COMMUNITY_Norm Percentage|Norm Percentage]]
-- [[_COMMUNITY_Norm 0-5|Norm 0-5]]
-- [[_COMMUNITY_Norm 1-5|Norm 1-5]]
-- [[_COMMUNITY_Min-Max Cost|Min-Max Cost]]
-- [[_COMMUNITY_Core Init|Core Init]]
-- [[_COMMUNITY_Dependencies|Dependencies]]
+- [[_COMMUNITY_App Main Logic (compute, debug, excel)|App Main Logic (compute, debug, excel)]]
+- [[_COMMUNITY_DataLoader and Rotation Queries|DataLoader and Rotation Queries]]
+- [[_COMMUNITY_App Helpers and Processors|App Helpers and Processors]]
+- [[_COMMUNITY_Core Package Init and DataLoader Class|Core Package Init and DataLoader Class]]
+- [[_COMMUNITY_Streamlit Visualization Components|Streamlit Visualization Components]]
+- [[_COMMUNITY_GroupOptimizer MILP|GroupOptimizer MILP]]
+- [[_COMMUNITY_DataLoader DataFrames and Ponderaciones|DataLoader DataFrames and Ponderaciones]]
+- [[_COMMUNITY_PPTX Presentation Generator|PPTX Presentation Generator]]
+- [[_COMMUNITY_Score Normalization Functions (static)|Score Normalization Functions (static)]]
+- [[_COMMUNITY_Project Documentation Suite|Project Documentation Suite]]
+- [[_COMMUNITY_Utility Functions and JSON IO|Utility Functions and JSON IO]]
+- [[_COMMUNITY_Numeric Helper to_float|Numeric Helper to_float]]
+- [[_COMMUNITY_Norm 1-5 Function|Norm 1-5 Function]]
+- [[_COMMUNITY_Norm 0-5 Function|Norm 0-5 Function]]
+- [[_COMMUNITY_Norm Percentage Function|Norm Percentage Function]]
+- [[_COMMUNITY_Min-Max Benefit Function|Min-Max Benefit Function]]
+- [[_COMMUNITY_Min-Max Cost Function|Min-Max Cost Function]]
+- [[_COMMUNITY_CLI Optimization Model (legacy)|CLI Optimization Model (legacy)]]
+- [[_COMMUNITY_Refined Model Plan Document|Refined Model Plan Document]]
+- [[_COMMUNITY_Load Results JSON Utility|Load Results JSON Utility]]
+- [[_COMMUNITY_Save Results JSON Utility|Save Results JSON Utility]]
+- [[_COMMUNITY_Setup Logging Utility|Setup Logging Utility]]
+- [[_COMMUNITY_Map Practice Parser Function|Map Practice Parser Function]]
+- [[_COMMUNITY_Documentation Project Overview|Documentation: Project Overview]]
+- [[_COMMUNITY_Documentation Template Guide|Documentation: Template Guide]]
+- [[_COMMUNITY_Documentation Quick Start|Documentation: Quick Start]]
+- [[_COMMUNITY_Documentation Results Analysis|Documentation: Results Analysis]]
+- [[_COMMUNITY_Documentation Project Structure|Documentation: Project Structure]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `main()` - 14 edges
-2. `DataLoader` - 11 edges
+1. `main()` - 19 edges
+2. `DataLoader` - 15 edges
 3. `procesar_datos()` - 10 edges
-4. `Streamlit Application` - 8 edges
-5. `CLI Optimization Model` - 7 edges
-6. `create_presentation()` - 6 edges
-7. `Optimizer` - 6 edges
-8. `Data Loader` - 6 edges
-9. `normalize_criteria()` - 5 edges
-10. `add_textbox()` - 4 edges
+4. `GroupOptimizer class (MILP with group size constraints)` - 8 edges
+5. `GroupOptimizer` - 7 edges
+6. `procesar_datos (Agregado mode)` - 7 edges
+7. `procesar_refinado (Refinado mode)` - 7 edges
+8. `DataLoader.load_all` - 7 edges
+9. `create_presentation()` - 6 edges
+10. `Optimizer` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Model Output Log` --references--> `CLI Optimization Model`  [EXTRACTED]
-  salida_modelo.txt → scripts/modelo_v1.py
-- `CLI Optimization Model` --semantically_similar_to--> `MILP Optimizer`  [INFERRED] [semantically similar]
-  scripts/modelo_v1.py → src/core/optimizer.py
+- `Plan Task 1: scripts/parse_mapa_practica.py (Mapa de Práctica parser)` --conceptually_related_to--> `DataFrame 'rotaciones' (from sheet 06_Rotaciones or parser)`  [INFERRED]
+  docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md → src/core/data_loader.py
+- `Rationale: Group size constraints (semesters 5-8: 4-7 students; 9-12: 3-5 students) — pedagogical/administrative cohort limits per plan` --rationale_for--> `GroupOptimizer class (MILP with group size constraints)`  [INFERRED]
+  docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md → src/core/optimizer.py
 - `CLI Optimization Model` --semantically_similar_to--> `Score Calculator`  [INFERRED] [semantically similar]
   scripts/modelo_v1.py → src/core/calculator.py
 - `Project README` --semantically_similar_to--> `Project Structure Documentation`  [INFERRED] [semantically similar]
   README.md → ESTRUCTURA_PROYECTO.md
-- `procesar_datos()` --calls--> `lookup_costo()`  [INFERRED]
-  app.py → scripts/modelo_v1.py
+- `Plan Task 4: Streamlit app.py 'Refinado por semestre' mode` --references--> `DataLoader.get_ponderaciones_dict`  [EXTRACTED]
+  docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md → src/core/data_loader.py
 
 ## Hyperedges (group relationships)
-- **MILP Optimization Pipeline** — app, data_loader, calculator, optimizer [INFERRED 0.85]
-- **Project Documentation Suite** — readme, estructura_proyecto, guia_llenado, analisis_resultados, inicio_rapido [EXTRACTED 0.90]
 - **Debug and Diagnostic Suite** — debug_tipos, debug_merge, debug_cupos, diagnostico [INFERRED 0.80]
+- **Project Documentation Suite** — readme, estructura_proyecto, guia_llenado, analisis_resultados, inicio_rapido [EXTRACTED 0.90]
 
-## Communities (22 total, 9 thin omitted)
+## Communities (35 total, 17 thin omitted)
 
-### Community 0 - "Main Application Logic"
-Cohesion: 0.10
-Nodes (25): clean_criterio_codigo(), compute_scores_debug(), generar_excel_resultados(), generate_ejemplo_costos(), generate_ejemplo_cupos(), generate_ejemplo_demanda(), get_config_options_from_upload(), main() (+17 more)
+### Community 0 - "App Main Logic (compute, debug, excel)"
+Cohesion: 0.09
+Nodes (32): clean_criterio_codigo(), _compute_scores(), compute_scores_debug(), generar_excel_resultados(), generate_ejemplo_costos(), generate_ejemplo_cupos(), generate_ejemplo_demanda(), get_config_options_from_upload() (+24 more)
 
-### Community 1 - "Project Overview"
-Cohesion: 0.12
-Nodes (23): Results Analysis Document, Streamlit Application, Score Calculator, Data Loader, Debug Cupos Script, Debug Merge Script, Debug ID Types Script, Diagnostic Script (+15 more)
+### Community 1 - "DataLoader and Rotation Queries"
+Cohesion: 0.07
+Nodes (16): DataLoader, Cargador de datos desde plantilla Excel, Valida que los pesos sumen 1.0. Retorna la suma., Retorna (pesos, tipos) de criterios para set_id y semestre., Carga y valida datos desde plantilla Excel V3, Retorna Set_ID disponibles en la hoja de ponderaciones., Retorna semestres disponibles en ponderaciones., Verifica si hay datos reales en cupos. (+8 more)
 
-### Community 2 - "Data Loading Module"
-Cohesion: 0.12
-Nodes (10): DataLoader, Retorna Set_ID disponibles en la hoja de ponderaciones., Retorna semestres disponibles en ponderaciones., Verifica si hay datos reales en cupos., Carga y valida datos desde plantilla Excel V3, Verifica si hay datos reales en costos., Carga todos los datos necesarios. Retorna True si está completo., Valida que los pesos sumen 1.0. Retorna la suma. (+2 more)
+### Community 2 - "App Helpers and Processors"
+Cohesion: 0.14
+Nodes (24): clean_criterio_codigo (normalize criterion code), _compute_scores (helper), generar_excel_resultados (multi-sheet export), lookup_costo nested function (3-level cost fallback), main() entry point, MILP Mathematical Model Documentation, procesar_datos (Agregado mode), procesar_refinado (Refinado mode) (+16 more)
 
-### Community 3 - "Streamlit UI Components"
+### Community 3 - "Core Package Init and DataLoader Class"
+Cohesion: 0.14
+Nodes (20): src.core package public API (DataLoader, Optimizer, GroupOptimizer, ScoreCalculator), DataLoader class, DataLoader.get_asignaturas_rotaciones, DataLoader.get_ips_for_rotacion, DataLoader.get_rotaciones_dict, DataLoader.load_rotaciones, DataFrame 'rotaciones' (from sheet 06_Rotaciones or parser), GroupOptimizer class (MILP with group size constraints) (+12 more)
+
+### Community 4 - "Streamlit Visualization Components"
 Cohesion: 0.11
 Nodes (17): Componentes de visualización para Streamlit, Renderiza resumen de resultados, Renderiza encabezado de la aplicación, Renderiza tabla de asignaciones, Renderiza gráfico de utilización de capacidad, Renderiza comparación demanda vs asignación, Renderiza información de debug, Renderiza sección de upload (+9 more)
 
-### Community 4 - "MILP Optimizer"
-Cohesion: 0.15
-Nodes (7): Cargador de datos desde plantilla Excel, Módulo principal: Corazón del modelo de optimización, Optimizer, Modelo de optimización MILP para asignación de estudiantes, Retorna el valor óptimo de la función objetivo, Ejecuta optimización MILP de asignación, Resuelve el problema de optimización.                  Parameters:         -----
+### Community 5 - "GroupOptimizer MILP"
+Cohesion: 0.13
+Nodes (7): GroupOptimizer, Optimizer, Modelo de optimización MILP para asignación de estudiantes, Retorna el valor óptimo de la función objetivo, Optimización con grupos de tamaño controlado por semestre., Ejecuta optimización MILP de asignación, Resuelve el problema de optimización.                  Parameters:         -----
 
-### Community 5 - "PPTX Generator"
+### Community 6 - "DataLoader DataFrames and Ponderaciones"
+Cohesion: 0.17
+Nodes (13): DataLoader._to_float (static helper), DataFrame 'calidad' (from sheet 03_Calidad), DataFrame 'costos' (from sheet 04_Costo_del_Sitio), DataFrame 'cupos' (from sheet 02_Oferta_x_Programa), DataLoader.get_ponderaciones_dict, DataLoader.has_costos_data, DataLoader.has_cupos_data, DataLoader.load_all (+5 more)
+
+### Community 7 - "PPTX Presentation Generator"
 Cohesion: 0.24
 Nodes (11): add_background(), add_bullet_list(), add_table(), add_textbox(), create_presentation(), Generador de presentación PPTX del Modelo de Optimización, Genera la presentación completa, Agrega fondo de color a una diapositiva (+3 more)
 
-### Community 6 - "Score Calculator"
+### Community 8 - "Score Normalization Functions (static)"
 Cohesion: 0.29
 Nodes (8): minmax_cost(), norm_0_5(), norm_1_5(), norm_pct(), normalize_criteria(), Calculador de scores normalizados para criterios, Calcula scores normalizados de criterios, ScoreCalculator
 
-### Community 7 - "Utility Functions"
+### Community 9 - "Project Documentation Suite"
+Cohesion: 0.22
+Nodes (10): Results Analysis Document, Score Calculator, Project Structure Documentation, Template Filling Guide, Quick Start Guide, CLI Optimization Model, Multicriteria Scoring System, Project README (+2 more)
+
+### Community 10 - "Utility Functions and JSON IO"
 Cohesion: 0.25
 Nodes (7): load_results_json(), Utilidades generales del proyecto, Configura logging para toda la aplicación, Guarda resultados en JSON, Carga resultados desde JSON, save_results_json(), setup_logging()
 
+## Ambiguous Edges - Review These
+- `lookup_costo nested function (3-level cost fallback)` → `clean_criterio_codigo (normalize criterion code)`  [AMBIGUOUS]
+  app.py · relation: semantically_similar_to
+
 ## Knowledge Gaps
-- **10 isolated node(s):** `Debug ID Types Script`, `Debug Merge Script`, `Debug Cupos Script`, `Diagnostic Script`, `Visualization Components` (+5 more)
+- **23 isolated node(s):** `PPTX Presentation Generator`, `Debug ID Types Script`, `Debug Merge Script`, `Debug Cupos Script`, `Diagnostic Script` (+18 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `main()` connect `Main Application Logic` to `Data Loading Module`, `Streamlit UI Components`?**
-  _High betweenness centrality (0.213) - this node is a cross-community bridge._
-- **Why does `DataLoader` connect `Data Loading Module` to `Main Application Logic`, `MILP Optimizer`?**
-  _High betweenness centrality (0.165) - this node is a cross-community bridge._
-- **Why does `procesar_datos()` connect `Main Application Logic` to `MILP Optimizer`?**
-  _High betweenness centrality (0.144) - this node is a cross-community bridge._
-- **Are the 9 inferred relationships involving `main()` (e.g. with `render_header()` and `render_upload_section()`) actually correct?**
-  _`main()` has 9 INFERRED edges - model-reasoned connections that need verification._
+- **What is the exact relationship between `lookup_costo nested function (3-level cost fallback)` and `clean_criterio_codigo (normalize criterion code)`?**
+  _Edge tagged AMBIGUOUS (relation: semantically_similar_to) - confidence is low._
+- **Why does `main()` connect `App Main Logic (compute, debug, excel)` to `DataLoader and Rotation Queries`, `Streamlit Visualization Components`?**
+  _High betweenness centrality (0.150) - this node is a cross-community bridge._
+- **Why does `DataLoader` connect `DataLoader and Rotation Queries` to `App Main Logic (compute, debug, excel)`?**
+  _High betweenness centrality (0.119) - this node is a cross-community bridge._
+- **Why does `procesar_datos()` connect `App Main Logic (compute, debug, excel)` to `GroupOptimizer MILP`?**
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
+- **Are the 10 inferred relationships involving `main()` (e.g. with `render_header()` and `render_upload_section()`) actually correct?**
+  _`main()` has 10 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `procesar_datos()` (e.g. with `lookup_costo()` and `Optimizer`) actually correct?**
   _`procesar_datos()` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 3 inferred relationships involving `Streamlit Application` (e.g. with `CLI Optimization Model` and `PPTX Presentation Generator`) actually correct?**
-  _`Streamlit Application` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 4 inferred relationships involving `CLI Optimization Model` (e.g. with `MILP Optimizer` and `Score Calculator`) actually correct?**
-  _`CLI Optimization Model` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 3 inferred relationships involving `GroupOptimizer class (MILP with group size constraints)` (e.g. with `Optimizer.optimize` and `Rationale: Group size constraints (semesters 5-8: 4-7 students; 9-12: 3-5 students) — pedagogical/administrative cohort limits per plan`) actually correct?**
+  _`GroupOptimizer class (MILP with group size constraints)` has 3 INFERRED edges - model-reasoned connections that need verification._

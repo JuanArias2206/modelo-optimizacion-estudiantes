@@ -4,18 +4,18 @@
   "graph": {
     "hyperedges": [
       {
-        "id": "milp_optimization_pipeline",
-        "label": "MILP Optimization Pipeline",
+        "id": "debug_diagnostic_suite",
+        "label": "Debug and Diagnostic Suite",
         "nodes": [
-          "app",
-          "data_loader",
-          "calculator",
-          "optimizer"
+          "debug_tipos",
+          "debug_merge",
+          "debug_cupos",
+          "diagnostico"
         ],
-        "relation": "implement",
+        "relation": "form",
         "confidence": "INFERRED",
-        "confidence_score": 0.85,
-        "source_file": "app.py"
+        "confidence_score": 0.8,
+        "source_file": "scripts/debug_tipos.py"
       },
       {
         "id": "project_documentation_suite",
@@ -31,20 +31,6 @@
         "confidence": "EXTRACTED",
         "confidence_score": 0.9,
         "source_file": "README.md"
-      },
-      {
-        "id": "debug_diagnostic_suite",
-        "label": "Debug and Diagnostic Suite",
-        "nodes": [
-          "debug_tipos",
-          "debug_merge",
-          "debug_cupos",
-          "diagnostico"
-        ],
-        "relation": "form",
-        "confidence": "INFERRED",
-        "confidence_score": 0.8,
-        "source_file": "scripts/debug_tipos.py"
       }
     ]
   },
@@ -55,7 +41,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L1",
       "id": "generar_presentacion_py",
-      "community": 5,
+      "community": 7,
       "norm_label": "generar_presentacion.py"
     },
     {
@@ -64,7 +50,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L25",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_add_background",
-      "community": 5,
+      "community": 7,
       "norm_label": "add_background()"
     },
     {
@@ -73,7 +59,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L33",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_add_textbox",
-      "community": 5,
+      "community": 7,
       "norm_label": "add_textbox()"
     },
     {
@@ -82,7 +68,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L47",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_add_bullet_list",
-      "community": 5,
+      "community": 7,
       "norm_label": "add_bullet_list()"
     },
     {
@@ -91,7 +77,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L65",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_add_table",
-      "community": 5,
+      "community": 7,
       "norm_label": "add_table()"
     },
     {
@@ -100,7 +86,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L99",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_create_presentation",
-      "community": 5,
+      "community": 7,
       "norm_label": "create_presentation()"
     },
     {
@@ -109,7 +95,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L1",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_1",
-      "community": 5,
+      "community": 7,
       "norm_label": "generador de presentacion pptx del modelo de optimizacion"
     },
     {
@@ -118,7 +104,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L26",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_26",
-      "community": 5,
+      "community": 7,
       "norm_label": "agrega fondo de color a una diapositiva"
     },
     {
@@ -127,7 +113,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L34",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_34",
-      "community": 5,
+      "community": 7,
       "norm_label": "agrega un cuadro de texto a la diapositiva"
     },
     {
@@ -136,7 +122,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L48",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_48",
-      "community": 5,
+      "community": 7,
       "norm_label": "agrega una lista con vinetas"
     },
     {
@@ -145,7 +131,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L66",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_66",
-      "community": 5,
+      "community": 7,
       "norm_label": "agrega una tabla a la diapositiva"
     },
     {
@@ -154,7 +140,7 @@
       "source_file": "generar_presentacion.py",
       "source_location": "L100",
       "id": "modelo_opt_oficina_practicas_generar_presentacion_rationale_100",
-      "community": 5,
+      "community": 7,
       "norm_label": "genera la presentacion completa"
     },
     {
@@ -170,7 +156,7 @@
       "label": "generate_ejemplo_demanda()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L36",
+      "source_location": "L38",
       "id": "modelo_opt_oficina_practicas_app_generate_ejemplo_demanda",
       "community": 0,
       "norm_label": "generate_ejemplo_demanda()"
@@ -179,7 +165,7 @@
       "label": "get_config_options_from_upload()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L55",
+      "source_location": "L57",
       "id": "modelo_opt_oficina_practicas_app_get_config_options_from_upload",
       "community": 0,
       "norm_label": "get_config_options_from_upload()"
@@ -188,7 +174,7 @@
       "label": "preview_capacidad()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L75",
+      "source_location": "L77",
       "id": "modelo_opt_oficina_practicas_app_preview_capacidad",
       "community": 0,
       "norm_label": "preview_capacidad()"
@@ -197,7 +183,7 @@
       "label": "generate_ejemplo_cupos()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L90",
+      "source_location": "L92",
       "id": "modelo_opt_oficina_practicas_app_generate_ejemplo_cupos",
       "community": 0,
       "norm_label": "generate_ejemplo_cupos()"
@@ -206,7 +192,7 @@
       "label": "generate_ejemplo_costos()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L105",
+      "source_location": "L107",
       "id": "modelo_opt_oficina_practicas_app_generate_ejemplo_costos",
       "community": 0,
       "norm_label": "generate_ejemplo_costos()"
@@ -215,7 +201,7 @@
       "label": "clean_criterio_codigo()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L123",
+      "source_location": "L125",
       "id": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
       "community": 0,
       "norm_label": "clean_criterio_codigo()"
@@ -224,7 +210,7 @@
       "label": "to_bool01()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L131",
+      "source_location": "L133",
       "id": "modelo_opt_oficina_practicas_app_to_bool01",
       "community": 0,
       "norm_label": "to_bool01()"
@@ -233,7 +219,7 @@
       "label": "map_epp_exigidos()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L145",
+      "source_location": "L147",
       "id": "modelo_opt_oficina_practicas_app_map_epp_exigidos",
       "community": 0,
       "norm_label": "map_epp_exigidos()"
@@ -242,7 +228,7 @@
       "label": "compute_scores_debug()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L159",
+      "source_location": "L161",
       "id": "modelo_opt_oficina_practicas_app_compute_scores_debug",
       "community": 0,
       "norm_label": "compute_scores_debug()"
@@ -251,7 +237,7 @@
       "label": "generar_excel_resultados()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L169",
+      "source_location": "L171",
       "id": "modelo_opt_oficina_practicas_app_generar_excel_resultados",
       "community": 0,
       "norm_label": "generar_excel_resultados()"
@@ -260,16 +246,61 @@
       "label": "procesar_datos()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L339",
+      "source_location": "L341",
       "id": "modelo_opt_oficina_practicas_app_procesar_datos",
       "community": 0,
       "norm_label": "procesar_datos()"
     },
     {
+      "label": "procesar_refinado()",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "L860",
+      "id": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "community": 0,
+      "norm_label": "procesar_refinado()"
+    },
+    {
+      "label": "_compute_scores()",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "L1061",
+      "id": "modelo_opt_oficina_practicas_app_compute_scores",
+      "community": 0,
+      "norm_label": "_compute_scores()"
+    },
+    {
+      "label": "_render_heatmap_grupo_ips()",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "L1133",
+      "id": "modelo_opt_oficina_practicas_app_render_heatmap_grupo_ips",
+      "community": 0,
+      "norm_label": "_render_heatmap_grupo_ips()"
+    },
+    {
+      "label": "_render_quadrant_calidad_costo()",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "L1154",
+      "id": "modelo_opt_oficina_practicas_app_render_quadrant_calidad_costo",
+      "community": 0,
+      "norm_label": "_render_quadrant_calidad_costo()"
+    },
+    {
+      "label": "_render_gauge_optimo()",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "L1199",
+      "id": "modelo_opt_oficina_practicas_app_render_gauge_optimo",
+      "community": 0,
+      "norm_label": "_render_gauge_optimo()"
+    },
+    {
       "label": "main()",
       "file_type": "code",
       "source_file": "app.py",
-      "source_location": "L858",
+      "source_location": "L1237",
       "id": "modelo_opt_oficina_practicas_app_main",
       "community": 0,
       "norm_label": "main()"
@@ -287,8 +318,8 @@
       "label": "Genera demanda de ejemplo (grupo \u00fanico)",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L43",
-      "id": "modelo_opt_oficina_practicas_app_rationale_43",
+      "source_location": "L45",
+      "id": "modelo_opt_oficina_practicas_app_rationale_45",
       "community": 0,
       "norm_label": "genera demanda de ejemplo (grupo unico)"
     },
@@ -296,8 +327,8 @@
       "label": "Extrae Set_ID y semestres disponibles desde el archivo subido.",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L56",
-      "id": "modelo_opt_oficina_practicas_app_rationale_56",
+      "source_location": "L58",
+      "id": "modelo_opt_oficina_practicas_app_rationale_58",
       "community": 0,
       "norm_label": "extrae set_id y semestres disponibles desde el archivo subido."
     },
@@ -305,8 +336,8 @@
       "label": "Calcula capacidad total estimada desde 02_Oferta_x_Programa.",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L76",
-      "id": "modelo_opt_oficina_practicas_app_rationale_76",
+      "source_location": "L78",
+      "id": "modelo_opt_oficina_practicas_app_rationale_78",
       "community": 0,
       "norm_label": "calcula capacidad total estimada desde 02_oferta_x_programa."
     },
@@ -314,8 +345,8 @@
       "label": "Genera cupos de ejemplo",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L91",
-      "id": "modelo_opt_oficina_practicas_app_rationale_91",
+      "source_location": "L93",
+      "id": "modelo_opt_oficina_practicas_app_rationale_93",
       "community": 0,
       "norm_label": "genera cupos de ejemplo"
     },
@@ -323,8 +354,8 @@
       "label": "Genera costos de ejemplo",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L106",
-      "id": "modelo_opt_oficina_practicas_app_rationale_106",
+      "source_location": "L108",
+      "id": "modelo_opt_oficina_practicas_app_rationale_108",
       "community": 0,
       "norm_label": "genera costos de ejemplo"
     },
@@ -332,8 +363,8 @@
       "label": "Limpia c\u00f3digo de criterio removiendo sufijos como '(...)' y espacios extra.",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L124",
-      "id": "modelo_opt_oficina_practicas_app_rationale_124",
+      "source_location": "L126",
+      "id": "modelo_opt_oficina_practicas_app_rationale_126",
       "community": 0,
       "norm_label": "limpia codigo de criterio removiendo sufijos como '(...)' y espacios extra."
     },
@@ -341,8 +372,8 @@
       "label": "Mapea valores comunes S\u00ed/No a 1/0 de forma robusta.",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L132",
-      "id": "modelo_opt_oficina_practicas_app_rationale_132",
+      "source_location": "L134",
+      "id": "modelo_opt_oficina_practicas_app_rationale_134",
       "community": 0,
       "norm_label": "mapea valores comunes si/no a 1/0 de forma robusta."
     },
@@ -350,8 +381,8 @@
       "label": "Mapea EPP_Exigidos a costo num\u00e9rico: 0 (sin), 0.5 (parcial), 1 (completo).",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L146",
-      "id": "modelo_opt_oficina_practicas_app_rationale_146",
+      "source_location": "L148",
+      "id": "modelo_opt_oficina_practicas_app_rationale_148",
       "community": 0,
       "norm_label": "mapea epp_exigidos a costo numerico: 0 (sin), 0.5 (parcial), 1 (completo)."
     },
@@ -359,8 +390,8 @@
       "label": "Devuelve score por instituci\u00f3n y criterios sk para auditor\u00eda.",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L160",
-      "id": "modelo_opt_oficina_practicas_app_rationale_160",
+      "source_location": "L162",
+      "id": "modelo_opt_oficina_practicas_app_rationale_162",
       "community": 0,
       "norm_label": "devuelve score por institucion y criterios sk para auditoria."
     },
@@ -368,8 +399,8 @@
       "label": "Genera un Excel bonito con m\u00faltiples hojas de resultados          Args:",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L170",
-      "id": "modelo_opt_oficina_practicas_app_rationale_170",
+      "source_location": "L172",
+      "id": "modelo_opt_oficina_practicas_app_rationale_172",
       "community": 0,
       "norm_label": "genera un excel bonito con multiples hojas de resultados          args:"
     },
@@ -377,10 +408,28 @@
       "label": "Procesa datos y ejecuta optimizaci\u00f3n",
       "file_type": "rationale",
       "source_file": "app.py",
-      "source_location": "L348",
-      "id": "modelo_opt_oficina_practicas_app_rationale_348",
+      "source_location": "L350",
+      "id": "modelo_opt_oficina_practicas_app_rationale_350",
       "community": 0,
       "norm_label": "procesa datos y ejecuta optimizacion"
+    },
+    {
+      "label": "Calcula scores por IPS usando los criterios y pesos activos.",
+      "file_type": "rationale",
+      "source_file": "app.py",
+      "source_location": "L1062",
+      "id": "modelo_opt_oficina_practicas_app_rationale_1062",
+      "community": 0,
+      "norm_label": "calcula scores por ips usando los criterios y pesos activos."
+    },
+    {
+      "label": "generar_plantilla_v4.py",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "L1",
+      "id": "scripts_generar_plantilla_v4_py",
+      "community": 13,
+      "norm_label": "generar_plantilla_v4.py"
     },
     {
       "label": "debug_tipos.py",
@@ -388,8 +437,44 @@
       "source_file": "scripts/debug_tipos.py",
       "source_location": "L1",
       "id": "scripts_debug_tipos_py",
-      "community": 9,
+      "community": 14,
       "norm_label": "debug_tipos.py"
+    },
+    {
+      "label": "parse_mapa_practica.py",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L1",
+      "id": "scripts_parse_mapa_practica_py",
+      "community": 12,
+      "norm_label": "parse_mapa_practica.py"
+    },
+    {
+      "label": "get_group_constraints()",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L35",
+      "id": "scripts_parse_mapa_practica_get_group_constraints",
+      "community": 0,
+      "norm_label": "get_group_constraints()"
+    },
+    {
+      "label": "parse_escenario()",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L39",
+      "id": "scripts_parse_mapa_practica_parse_escenario",
+      "community": 12,
+      "norm_label": "parse_escenario()"
+    },
+    {
+      "label": "parse_mapa_practica()",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L60",
+      "id": "scripts_parse_mapa_practica_parse_mapa_practica",
+      "community": 12,
+      "norm_label": "parse_mapa_practica()"
     },
     {
       "label": "debug_merge.py",
@@ -397,7 +482,7 @@
       "source_file": "scripts/debug_merge.py",
       "source_location": "L1",
       "id": "scripts_debug_merge_py",
-      "community": 10,
+      "community": 15,
       "norm_label": "debug_merge.py"
     },
     {
@@ -406,7 +491,7 @@
       "source_file": "scripts/debug_cupos.py",
       "source_location": "L1",
       "id": "scripts_debug_cupos_py",
-      "community": 11,
+      "community": 16,
       "norm_label": "debug_cupos.py"
     },
     {
@@ -415,7 +500,7 @@
       "source_file": "scripts/diagn\u00f3stico.py",
       "source_location": "L1",
       "id": "scripts_diagn\u00f3stico_py",
-      "community": 12,
+      "community": 17,
       "norm_label": "diagnostico.py"
     },
     {
@@ -424,7 +509,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L1",
       "id": "scripts_modelo_v1_py",
-      "community": 8,
+      "community": 11,
       "norm_label": "modelo_v1.py"
     },
     {
@@ -433,7 +518,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L134",
       "id": "scripts_modelo_v1_norm_1_5",
-      "community": 8,
+      "community": 11,
       "norm_label": "norm_1_5()"
     },
     {
@@ -442,7 +527,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L137",
       "id": "scripts_modelo_v1_norm_0_5",
-      "community": 8,
+      "community": 11,
       "norm_label": "norm_0_5()"
     },
     {
@@ -451,7 +536,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L140",
       "id": "scripts_modelo_v1_norm_pct",
-      "community": 8,
+      "community": 11,
       "norm_label": "norm_pct()"
     },
     {
@@ -460,7 +545,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L143",
       "id": "scripts_modelo_v1_minmax_cost",
-      "community": 8,
+      "community": 11,
       "norm_label": "minmax_cost()"
     },
     {
@@ -469,7 +554,7 @@
       "source_file": "scripts/modelo_v1.py",
       "source_location": "L150",
       "id": "scripts_modelo_v1_minmax_benefit",
-      "community": 8,
+      "community": 11,
       "norm_label": "minmax_benefit()"
     },
     {
@@ -487,7 +572,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L1",
       "id": "src_visualization_init_py",
-      "community": 3,
+      "community": 4,
       "norm_label": "__init__.py"
     },
     {
@@ -496,7 +581,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L12",
       "id": "visualization_init_render_header",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_header()"
     },
     {
@@ -505,7 +590,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L29",
       "id": "visualization_init_render_upload_section",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_upload_section()"
     },
     {
@@ -514,7 +599,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L42",
       "id": "visualization_init_render_config_section",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_config_section()"
     },
     {
@@ -523,7 +608,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L112",
       "id": "visualization_init_render_results_summary",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_results_summary()"
     },
     {
@@ -532,7 +617,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L152",
       "id": "visualization_init_render_asignaciones_table",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_asignaciones_table()"
     },
     {
@@ -541,7 +626,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L167",
       "id": "visualization_init_render_capacidad_chart",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_capacidad_chart()"
     },
     {
@@ -550,7 +635,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L203",
       "id": "visualization_init_render_demanda_vs_asignacion",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_demanda_vs_asignacion()"
     },
     {
@@ -559,7 +644,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L231",
       "id": "visualization_init_render_debug_info",
-      "community": 3,
+      "community": 4,
       "norm_label": "render_debug_info()"
     },
     {
@@ -568,7 +653,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L1",
       "id": "visualization_init_rationale_1",
-      "community": 3,
+      "community": 4,
       "norm_label": "componentes de visualizacion para streamlit"
     },
     {
@@ -577,7 +662,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L13",
       "id": "visualization_init_rationale_13",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza encabezado de la aplicacion"
     },
     {
@@ -586,7 +671,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L30",
       "id": "visualization_init_rationale_30",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza seccion de upload"
     },
     {
@@ -595,7 +680,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L48",
       "id": "visualization_init_rationale_48",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza seccion de configuracion"
     },
     {
@@ -604,7 +689,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L113",
       "id": "visualization_init_rationale_113",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza resumen de resultados"
     },
     {
@@ -613,7 +698,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L153",
       "id": "visualization_init_rationale_153",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza tabla de asignaciones"
     },
     {
@@ -622,7 +707,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L168",
       "id": "visualization_init_rationale_168",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza grafico de utilizacion de capacidad"
     },
     {
@@ -631,7 +716,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L204",
       "id": "visualization_init_rationale_204",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza comparacion demanda vs asignacion"
     },
     {
@@ -640,7 +725,7 @@
       "source_file": "src/visualization/__init__.py",
       "source_location": "L232",
       "id": "visualization_init_rationale_232",
-      "community": 3,
+      "community": 4,
       "norm_label": "renderiza informacion de debug"
     },
     {
@@ -649,7 +734,7 @@
       "source_file": "src/core/data_loader.py",
       "source_location": "L1",
       "id": "src_core_data_loader_py",
-      "community": 4,
+      "community": 1,
       "norm_label": "data_loader.py"
     },
     {
@@ -658,7 +743,7 @@
       "source_file": "src/core/data_loader.py",
       "source_location": "L13",
       "id": "core_data_loader_dataloader",
-      "community": 2,
+      "community": 1,
       "norm_label": "dataloader"
     },
     {
@@ -667,80 +752,116 @@
       "source_file": "src/core/data_loader.py",
       "source_location": "L16",
       "id": "core_data_loader_dataloader_init",
-      "community": 2,
+      "community": 1,
       "norm_label": ".__init__()"
     },
     {
       "label": "_to_float()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L30",
+      "source_location": "L31",
       "id": "core_data_loader_to_float",
-      "community": 2,
+      "community": 1,
       "norm_label": "_to_float()"
     },
     {
       "label": ".load_all()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L39",
+      "source_location": "L40",
       "id": "core_data_loader_dataloader_load_all",
-      "community": 2,
+      "community": 1,
       "norm_label": ".load_all()"
     },
     {
       "label": ".validate_pesas()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L71",
+      "source_location": "L108",
       "id": "core_data_loader_dataloader_validate_pesas",
-      "community": 2,
+      "community": 1,
       "norm_label": ".validate_pesas()"
     },
     {
       "label": ".get_ponderaciones_dict()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L89",
+      "source_location": "L126",
       "id": "core_data_loader_dataloader_get_ponderaciones_dict",
-      "community": 2,
+      "community": 1,
       "norm_label": ".get_ponderaciones_dict()"
     },
     {
       "label": ".get_available_set_ids()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L104",
+      "source_location": "L141",
       "id": "core_data_loader_dataloader_get_available_set_ids",
-      "community": 2,
+      "community": 1,
       "norm_label": ".get_available_set_ids()"
     },
     {
       "label": ".get_available_semestres()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L118",
+      "source_location": "L155",
       "id": "core_data_loader_dataloader_get_available_semestres",
-      "community": 2,
+      "community": 1,
       "norm_label": ".get_available_semestres()"
     },
     {
       "label": ".has_cupos_data()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L132",
+      "source_location": "L169",
       "id": "core_data_loader_dataloader_has_cupos_data",
-      "community": 2,
+      "community": 1,
       "norm_label": ".has_cupos_data()"
     },
     {
       "label": ".has_costos_data()",
       "file_type": "code",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L139",
+      "source_location": "L176",
       "id": "core_data_loader_dataloader_has_costos_data",
-      "community": 2,
+      "community": 1,
       "norm_label": ".has_costos_data()"
+    },
+    {
+      "label": ".load_rotaciones()",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L184",
+      "id": "core_data_loader_dataloader_load_rotaciones",
+      "community": 1,
+      "norm_label": ".load_rotaciones()"
+    },
+    {
+      "label": ".get_rotaciones_dict()",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L193",
+      "id": "core_data_loader_dataloader_get_rotaciones_dict",
+      "community": 1,
+      "norm_label": ".get_rotaciones_dict()"
+    },
+    {
+      "label": ".get_asignaturas_rotaciones()",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L202",
+      "id": "core_data_loader_dataloader_get_asignaturas_rotaciones",
+      "community": 1,
+      "norm_label": ".get_asignaturas_rotaciones()"
+    },
+    {
+      "label": ".get_ips_for_rotacion()",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L211",
+      "id": "core_data_loader_dataloader_get_ips_for_rotacion",
+      "community": 1,
+      "norm_label": ".get_ips_for_rotacion()"
     },
     {
       "label": "Cargador de datos desde plantilla Excel",
@@ -748,7 +869,7 @@
       "source_file": "src/core/data_loader.py",
       "source_location": "L1",
       "id": "core_data_loader_rationale_1",
-      "community": 4,
+      "community": 1,
       "norm_label": "cargador de datos desde plantilla excel"
     },
     {
@@ -757,80 +878,116 @@
       "source_file": "src/core/data_loader.py",
       "source_location": "L14",
       "id": "core_data_loader_rationale_14",
-      "community": 2,
+      "community": 1,
       "norm_label": "carga y valida datos desde plantilla excel v3"
     },
     {
       "label": "Convierte texto num\u00e9rico a float soportando coma decimal.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L31",
-      "id": "core_data_loader_rationale_31",
-      "community": 13,
+      "source_location": "L32",
+      "id": "core_data_loader_rationale_32",
+      "community": 18,
       "norm_label": "convierte texto numerico a float soportando coma decimal."
     },
     {
       "label": "Carga todos los datos necesarios. Retorna True si est\u00e1 completo.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L40",
-      "id": "core_data_loader_rationale_40",
-      "community": 2,
+      "source_location": "L41",
+      "id": "core_data_loader_rationale_41",
+      "community": 1,
       "norm_label": "carga todos los datos necesarios. retorna true si esta completo."
     },
     {
       "label": "Valida que los pesos sumen 1.0. Retorna la suma.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L72",
-      "id": "core_data_loader_rationale_72",
-      "community": 2,
+      "source_location": "L109",
+      "id": "core_data_loader_rationale_109",
+      "community": 1,
       "norm_label": "valida que los pesos sumen 1.0. retorna la suma."
     },
     {
       "label": "Retorna (pesos, tipos) de criterios para set_id y semestre.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L90",
-      "id": "core_data_loader_rationale_90",
-      "community": 2,
+      "source_location": "L127",
+      "id": "core_data_loader_rationale_127",
+      "community": 1,
       "norm_label": "retorna (pesos, tipos) de criterios para set_id y semestre."
     },
     {
       "label": "Retorna Set_ID disponibles en la hoja de ponderaciones.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L105",
-      "id": "core_data_loader_rationale_105",
-      "community": 2,
+      "source_location": "L142",
+      "id": "core_data_loader_rationale_142",
+      "community": 1,
       "norm_label": "retorna set_id disponibles en la hoja de ponderaciones."
     },
     {
       "label": "Retorna semestres disponibles en ponderaciones.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L119",
-      "id": "core_data_loader_rationale_119",
-      "community": 2,
+      "source_location": "L156",
+      "id": "core_data_loader_rationale_156",
+      "community": 1,
       "norm_label": "retorna semestres disponibles en ponderaciones."
     },
     {
       "label": "Verifica si hay datos reales en cupos.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L133",
-      "id": "core_data_loader_rationale_133",
-      "community": 2,
+      "source_location": "L170",
+      "id": "core_data_loader_rationale_170",
+      "community": 1,
       "norm_label": "verifica si hay datos reales en cupos."
     },
     {
       "label": "Verifica si hay datos reales en costos.",
       "file_type": "rationale",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L140",
-      "id": "core_data_loader_rationale_140",
-      "community": 2,
+      "source_location": "L177",
+      "id": "core_data_loader_rationale_177",
+      "community": 1,
       "norm_label": "verifica si hay datos reales en costos."
+    },
+    {
+      "label": "Carga datos de rotaciones desde DataFrame parseado del Mapa de Pr\u00e1ctica.",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L185",
+      "id": "core_data_loader_rationale_185",
+      "community": 1,
+      "norm_label": "carga datos de rotaciones desde dataframe parseado del mapa de practica."
+    },
+    {
+      "label": "Retorna {(asignatura, rotacion, id_institucion): cupo} para un semestre.",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L194",
+      "id": "core_data_loader_rationale_194",
+      "community": 1,
+      "norm_label": "retorna {(asignatura, rotacion, id_institucion): cupo} para un semestre."
+    },
+    {
+      "label": "Retorna {asignatura: [rotaciones]} para un semestre.",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L203",
+      "id": "core_data_loader_rationale_203",
+      "community": 1,
+      "norm_label": "retorna {asignatura: [rotaciones]} para un semestre."
+    },
+    {
+      "label": "Retorna lista de (id_institucion, cupo) para una rotaci\u00f3n espec\u00edfica.",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L212",
+      "id": "core_data_loader_rationale_212",
+      "community": 1,
+      "norm_label": "retorna lista de (id_institucion, cupo) para una rotacion especifica."
     },
     {
       "label": "__init__.py",
@@ -838,7 +995,7 @@
       "source_file": "src/core/__init__.py",
       "source_location": "L1",
       "id": "src_core_init_py",
-      "community": 4,
+      "community": 1,
       "norm_label": "__init__.py"
     },
     {
@@ -847,7 +1004,7 @@
       "source_file": "src/core/__init__.py",
       "source_location": "L1",
       "id": "core_init_rationale_1",
-      "community": 4,
+      "community": 1,
       "norm_label": "modulo principal: corazon del modelo de optimizacion"
     },
     {
@@ -856,7 +1013,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L1",
       "id": "src_core_calculator_py",
-      "community": 6,
+      "community": 8,
       "norm_label": "calculator.py"
     },
     {
@@ -865,7 +1022,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L13",
       "id": "core_calculator_scorecalculator",
-      "community": 6,
+      "community": 8,
       "norm_label": "scorecalculator"
     },
     {
@@ -874,7 +1031,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L17",
       "id": "core_calculator_norm_1_5",
-      "community": 6,
+      "community": 8,
       "norm_label": "norm_1_5()"
     },
     {
@@ -883,7 +1040,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L22",
       "id": "core_calculator_norm_0_5",
-      "community": 6,
+      "community": 8,
       "norm_label": "norm_0_5()"
     },
     {
@@ -892,7 +1049,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L27",
       "id": "core_calculator_norm_pct",
-      "community": 6,
+      "community": 8,
       "norm_label": "norm_pct()"
     },
     {
@@ -901,7 +1058,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L32",
       "id": "core_calculator_minmax_cost",
-      "community": 6,
+      "community": 8,
       "norm_label": "minmax_cost()"
     },
     {
@@ -910,7 +1067,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L40",
       "id": "core_calculator_minmax_benefit",
-      "community": 6,
+      "community": 8,
       "norm_label": "minmax_benefit()"
     },
     {
@@ -919,7 +1076,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L48",
       "id": "core_calculator_normalize_criteria",
-      "community": 6,
+      "community": 8,
       "norm_label": "normalize_criteria()"
     },
     {
@@ -928,7 +1085,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L1",
       "id": "core_calculator_rationale_1",
-      "community": 6,
+      "community": 8,
       "norm_label": "calculador de scores normalizados para criterios"
     },
     {
@@ -937,7 +1094,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L14",
       "id": "core_calculator_rationale_14",
-      "community": 6,
+      "community": 8,
       "norm_label": "calcula scores normalizados de criterios"
     },
     {
@@ -946,7 +1103,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L18",
       "id": "core_calculator_rationale_18",
-      "community": 14,
+      "community": 19,
       "norm_label": "normaliza escala 1-5 a 0-1"
     },
     {
@@ -955,7 +1112,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L23",
       "id": "core_calculator_rationale_23",
-      "community": 15,
+      "community": 20,
       "norm_label": "normaliza escala 0-5 a 0-1"
     },
     {
@@ -964,7 +1121,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L28",
       "id": "core_calculator_rationale_28",
-      "community": 16,
+      "community": 21,
       "norm_label": "normaliza porcentaje 0-100 a 0-1"
     },
     {
@@ -973,7 +1130,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L33",
       "id": "core_calculator_rationale_33",
-      "community": 17,
+      "community": 22,
       "norm_label": "normaliza costo: menor es mejor"
     },
     {
@@ -982,7 +1139,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L41",
       "id": "core_calculator_rationale_41",
-      "community": 18,
+      "community": 23,
       "norm_label": "normaliza beneficio: mayor es mejor"
     },
     {
@@ -991,7 +1148,7 @@
       "source_file": "src/core/calculator.py",
       "source_location": "L49",
       "id": "core_calculator_rationale_49",
-      "community": 19,
+      "community": 24,
       "norm_label": "normaliza todos los criterios en el dataframe"
     },
     {
@@ -1000,7 +1157,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L1",
       "id": "src_core_optimizer_py",
-      "community": 4,
+      "community": 5,
       "norm_label": "optimizer.py"
     },
     {
@@ -1009,7 +1166,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L14",
       "id": "core_optimizer_optimizer",
-      "community": 4,
+      "community": 5,
       "norm_label": "optimizer"
     },
     {
@@ -1018,7 +1175,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L17",
       "id": "core_optimizer_optimizer_init",
-      "community": 4,
+      "community": 5,
       "norm_label": ".__init__()"
     },
     {
@@ -1027,7 +1184,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L23",
       "id": "core_optimizer_optimizer_optimize",
-      "community": 4,
+      "community": 5,
       "norm_label": ".optimize()"
     },
     {
@@ -1036,8 +1193,53 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L106",
       "id": "core_optimizer_optimizer_get_objective_value",
-      "community": 4,
+      "community": 5,
       "norm_label": ".get_objective_value()"
+    },
+    {
+      "label": "GroupOptimizer",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L111",
+      "id": "core_optimizer_groupoptimizer",
+      "community": 5,
+      "norm_label": "groupoptimizer"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L114",
+      "id": "core_optimizer_groupoptimizer_init",
+      "community": 5,
+      "norm_label": ".__init__()"
+    },
+    {
+      "label": ".optimize()",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L119",
+      "id": "core_optimizer_groupoptimizer_optimize",
+      "community": 5,
+      "norm_label": ".optimize()"
+    },
+    {
+      "label": ".get_objective_value()",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L247",
+      "id": "core_optimizer_groupoptimizer_get_objective_value",
+      "community": 5,
+      "norm_label": ".get_objective_value()"
+    },
+    {
+      "label": ".get_groups_summary()",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L250",
+      "id": "core_optimizer_groupoptimizer_get_groups_summary",
+      "community": 5,
+      "norm_label": ".get_groups_summary()"
     },
     {
       "label": "Modelo de optimizaci\u00f3n MILP para asignaci\u00f3n de estudiantes",
@@ -1045,7 +1247,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L1",
       "id": "core_optimizer_rationale_1",
-      "community": 4,
+      "community": 5,
       "norm_label": "modelo de optimizacion milp para asignacion de estudiantes"
     },
     {
@@ -1054,7 +1256,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L15",
       "id": "core_optimizer_rationale_15",
-      "community": 4,
+      "community": 5,
       "norm_label": "ejecuta optimizacion milp de asignacion"
     },
     {
@@ -1063,7 +1265,7 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L32",
       "id": "core_optimizer_rationale_32",
-      "community": 4,
+      "community": 5,
       "norm_label": "resuelve el problema de optimizacion.                  parameters:         -----"
     },
     {
@@ -1072,8 +1274,17 @@
       "source_file": "src/core/optimizer.py",
       "source_location": "L107",
       "id": "core_optimizer_rationale_107",
-      "community": 4,
+      "community": 5,
       "norm_label": "retorna el valor optimo de la funcion objetivo"
+    },
+    {
+      "label": "Optimizaci\u00f3n con grupos de tama\u00f1o controlado por semestre.",
+      "file_type": "rationale",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L112",
+      "id": "core_optimizer_rationale_112",
+      "community": 5,
+      "norm_label": "optimizacion con grupos de tamano controlado por semestre."
     },
     {
       "label": "__init__.py",
@@ -1081,7 +1292,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L1",
       "id": "src_utils_init_py",
-      "community": 7,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -1090,7 +1301,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L13",
       "id": "utils_init_setup_logging",
-      "community": 7,
+      "community": 10,
       "norm_label": "setup_logging()"
     },
     {
@@ -1099,7 +1310,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L45",
       "id": "utils_init_save_results_json",
-      "community": 7,
+      "community": 10,
       "norm_label": "save_results_json()"
     },
     {
@@ -1108,7 +1319,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L51",
       "id": "utils_init_load_results_json",
-      "community": 7,
+      "community": 10,
       "norm_label": "load_results_json()"
     },
     {
@@ -1117,7 +1328,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L1",
       "id": "utils_init_rationale_1",
-      "community": 7,
+      "community": 10,
       "norm_label": "utilidades generales del proyecto"
     },
     {
@@ -1126,7 +1337,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L14",
       "id": "utils_init_rationale_14",
-      "community": 7,
+      "community": 10,
       "norm_label": "configura logging para toda la aplicacion"
     },
     {
@@ -1135,7 +1346,7 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L46",
       "id": "utils_init_rationale_46",
-      "community": 7,
+      "community": 10,
       "norm_label": "guarda resultados en json"
     },
     {
@@ -1144,21 +1355,8 @@
       "source_file": "src/utils/__init__.py",
       "source_location": "L52",
       "id": "utils_init_rationale_52",
-      "community": 7,
+      "community": 10,
       "norm_label": "carga resultados desde json"
-    },
-    {
-      "label": "Streamlit Application",
-      "file_type": "code",
-      "source_file": "app.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "app",
-      "community": 1,
-      "norm_label": "streamlit application"
     },
     {
       "label": "PPTX Presentation Generator",
@@ -1170,7 +1368,7 @@
       "author": null,
       "contributor": null,
       "id": "generar_presentacion",
-      "community": 1,
+      "community": 25,
       "norm_label": "pptx presentation generator"
     },
     {
@@ -1183,7 +1381,7 @@
       "author": null,
       "contributor": null,
       "id": "debug_tipos",
-      "community": 1,
+      "community": 26,
       "norm_label": "debug id types script"
     },
     {
@@ -1196,7 +1394,7 @@
       "author": null,
       "contributor": null,
       "id": "debug_merge",
-      "community": 1,
+      "community": 27,
       "norm_label": "debug merge script"
     },
     {
@@ -1209,7 +1407,7 @@
       "author": null,
       "contributor": null,
       "id": "debug_cupos",
-      "community": 1,
+      "community": 28,
       "norm_label": "debug cupos script"
     },
     {
@@ -1222,7 +1420,7 @@
       "author": null,
       "contributor": null,
       "id": "diagnostico",
-      "community": 1,
+      "community": 29,
       "norm_label": "diagnostic script"
     },
     {
@@ -1235,47 +1433,8 @@
       "author": null,
       "contributor": null,
       "id": "modelo_v1",
-      "community": 1,
+      "community": 9,
       "norm_label": "cli optimization model"
-    },
-    {
-      "label": "Data Loader",
-      "file_type": "code",
-      "source_file": "src/core/data_loader.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "data_loader",
-      "community": 1,
-      "norm_label": "data loader"
-    },
-    {
-      "label": "Score Calculator",
-      "file_type": "code",
-      "source_file": "src/core/calculator.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "calculator",
-      "community": 1,
-      "norm_label": "score calculator"
-    },
-    {
-      "label": "MILP Optimizer",
-      "file_type": "code",
-      "source_file": "src/core/optimizer.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "optimizer",
-      "community": 1,
-      "norm_label": "milp optimizer"
     },
     {
       "label": "Visualization Components",
@@ -1287,138 +1446,21 @@
       "author": null,
       "contributor": null,
       "id": "visualization",
-      "community": 1,
+      "community": 30,
       "norm_label": "visualization components"
     },
     {
-      "label": "Utility Functions",
+      "label": "Score Calculator",
       "file_type": "code",
-      "source_file": "src/utils/__init__.py",
+      "source_file": "src/core/calculator.py",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "utils",
-      "community": 1,
-      "norm_label": "utility functions"
-    },
-    {
-      "label": "Core Package Init",
-      "file_type": "code",
-      "source_file": "src/core/__init__.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "core_init",
-      "community": 20,
-      "norm_label": "core package init"
-    },
-    {
-      "label": "Project README",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "readme",
-      "community": 1,
-      "norm_label": "project readme"
-    },
-    {
-      "label": "Project Structure Documentation",
-      "file_type": "document",
-      "source_file": "ESTRUCTURA_PROYECTO.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "estructura_proyecto",
-      "community": 1,
-      "norm_label": "project structure documentation"
-    },
-    {
-      "label": "Template Filling Guide",
-      "file_type": "document",
-      "source_file": "GU\u00cdA_LLENADO_PLANTILLA.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "guia_llenado",
-      "community": 1,
-      "norm_label": "template filling guide"
-    },
-    {
-      "label": "Results Analysis Document",
-      "file_type": "document",
-      "source_file": "AN\u00c1LISIS_RESULTADOS.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "analisis_resultados",
-      "community": 1,
-      "norm_label": "results analysis document"
-    },
-    {
-      "label": "Quick Start Guide",
-      "file_type": "document",
-      "source_file": "INICIO_RAPIDO.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "inicio_rapido",
-      "community": 1,
-      "norm_label": "quick start guide"
-    },
-    {
-      "label": "Model Output Log",
-      "file_type": "document",
-      "source_file": "salida_modelo.txt",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "salida_modelo",
-      "community": 1,
-      "norm_label": "model output log"
-    },
-    {
-      "label": "Python Dependencies",
-      "file_type": "document",
-      "source_file": "requirements.txt",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "requirements",
-      "community": 21,
-      "norm_label": "python dependencies"
-    },
-    {
-      "label": "MILP Optimization Approach",
-      "file_type": "rationale",
-      "source_file": "src/core/optimizer.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "milp_optimization",
-      "community": 1,
-      "norm_label": "milp optimization approach"
+      "id": "calculator",
+      "community": 9,
+      "norm_label": "score calculator"
     },
     {
       "label": "Multicriteria Scoring System",
@@ -1430,21 +1472,8 @@
       "author": null,
       "contributor": null,
       "id": "multicriteria_scoring",
-      "community": 1,
+      "community": 9,
       "norm_label": "multicriteria scoring system"
-    },
-    {
-      "label": "Excel Template V3",
-      "file_type": "rationale",
-      "source_file": "src/core/data_loader.py",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "excel_template_v3",
-      "community": 1,
-      "norm_label": "excel template v3"
     },
     {
       "label": "Score Normalization Methodology",
@@ -1456,21 +1485,879 @@
       "author": null,
       "contributor": null,
       "id": "score_normalization",
-      "community": 1,
+      "community": 9,
       "norm_label": "score normalization methodology"
     },
     {
-      "label": "Fallback Strategy for Missing Data",
-      "file_type": "rationale",
-      "source_file": "app.py",
+      "label": "Utility Functions",
+      "file_type": "code",
+      "source_file": "src/utils/__init__.py",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "fallback_strategy",
-      "community": 1,
-      "norm_label": "fallback strategy for missing data"
+      "id": "utils",
+      "community": 31,
+      "norm_label": "utility functions"
+    },
+    {
+      "label": "Template Filling Guide",
+      "file_type": "document",
+      "source_file": "GU\u00cdA_LLENADO_PLANTILLA.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "guia_llenado",
+      "community": 9,
+      "norm_label": "template filling guide"
+    },
+    {
+      "label": "Project Structure Documentation",
+      "file_type": "document",
+      "source_file": "ESTRUCTURA_PROYECTO.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "estructura_proyecto",
+      "community": 9,
+      "norm_label": "project structure documentation"
+    },
+    {
+      "label": "Python Dependencies",
+      "file_type": "document",
+      "source_file": "requirements.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "requirements",
+      "community": 32,
+      "norm_label": "python dependencies"
+    },
+    {
+      "label": "Quick Start Guide",
+      "file_type": "document",
+      "source_file": "INICIO_RAPIDO.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "inicio_rapido",
+      "community": 9,
+      "norm_label": "quick start guide"
+    },
+    {
+      "label": "Results Analysis Document",
+      "file_type": "document",
+      "source_file": "AN\u00c1LISIS_RESULTADOS.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "analisis_resultados",
+      "community": 9,
+      "norm_label": "results analysis document"
+    },
+    {
+      "label": "Project README",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "readme",
+      "community": 9,
+      "norm_label": "project readme"
+    },
+    {
+      "label": "Model Output Log",
+      "file_type": "document",
+      "source_file": "salida_modelo.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "salida_modelo",
+      "community": 9,
+      "norm_label": "model output log"
+    },
+    {
+      "label": "main() entry point",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "1237:1-1620:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_main",
+      "community": 2,
+      "norm_label": "main() entry point"
+    },
+    {
+      "label": "procesar_datos (Agregado mode)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "341:1-857:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_procesar_datos",
+      "community": 2,
+      "norm_label": "procesar_datos (agregado mode)"
+    },
+    {
+      "label": "procesar_refinado (Refinado mode)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "860:1-1058:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_procesar_refinado",
+      "community": 2,
+      "norm_label": "procesar_refinado (refinado mode)"
+    },
+    {
+      "label": "generar_excel_resultados (multi-sheet export)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "171:1-338:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_generar_excel",
+      "community": 2,
+      "norm_label": "generar_excel_resultados (multi-sheet export)"
+    },
+    {
+      "label": "_compute_scores (helper)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "1061:1-1130:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_compute_scores",
+      "community": 2,
+      "norm_label": "_compute_scores (helper)"
+    },
+    {
+      "label": "lookup_costo nested function (3-level cost fallback)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "523:1-596:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_lookup_costo",
+      "community": 2,
+      "norm_label": "lookup_costo nested function (3-level cost fallback)"
+    },
+    {
+      "label": "MILP Mathematical Model Documentation",
+      "file_type": "rationale",
+      "source_file": "app.py",
+      "source_location": "1510:1-1585:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_milp_model_doc",
+      "community": 2,
+      "norm_label": "milp mathematical model documentation"
+    },
+    {
+      "label": "clean_criterio_codigo (normalize criterion code)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "125:1-130:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_clean_criterio_codigo",
+      "community": 2,
+      "norm_label": "clean_criterio_codigo (normalize criterion code)"
+    },
+    {
+      "label": "Semester-to-Set mapping (5-10 to SET-SEM*)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "1304:1-1311:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "app_sem_set_map",
+      "community": 2,
+      "norm_label": "semester-to-set mapping (5-10 to set-sem*)"
+    },
+    {
+      "label": "generar_plantilla_v4.py (Excel generator)",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "1:1-239:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "generar_plantilla_v4",
+      "community": 2,
+      "norm_label": "generar_plantilla_v4.py (excel generator)"
+    },
+    {
+      "label": "Six Semester-Specific Ponderation Sets (SET-SEM5..SET-SEM10)",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "46:1-149:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "v4_pond_sets",
+      "community": 2,
+      "norm_label": "six semester-specific ponderation sets (set-sem5..set-sem10)"
+    },
+    {
+      "label": "Demanda per semestre 5-10 (Medicina Pregrado)",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "34:1-42:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "v4_demanda_data",
+      "community": 2,
+      "norm_label": "demanda per semestre 5-10 (medicina pregrado)"
+    },
+    {
+      "label": "Plantilla_V4_Refinada.xlsx (artifact)",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "11:1-224:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "v4_plantilla_output",
+      "community": 2,
+      "norm_label": "plantilla_v4_refinada.xlsx (artifact)"
+    },
+    {
+      "label": "parse_mapa_practica.py (Excel parser)",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "1:1-104:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_mapa_practica",
+      "community": 33,
+      "norm_label": "parse_mapa_practica.py (excel parser)"
+    },
+    {
+      "label": "parse_mapa_practica() function",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "60:1-91:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_mapa_practica_fn",
+      "community": 2,
+      "norm_label": "parse_mapa_practica() function"
+    },
+    {
+      "label": "get_group_constraints() function",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "35:1-36:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_get_group_constraints",
+      "community": 2,
+      "norm_label": "get_group_constraints() function"
+    },
+    {
+      "label": "GROUP_CONSTRAINTS (per-semestre min/max group size)",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "19:1-28:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_grupo_constraints",
+      "community": 2,
+      "norm_label": "group_constraints (per-semestre min/max group size)"
+    },
+    {
+      "label": "PERIOD_MAP (Spanish period to integer)",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "5:1-17:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_period_map",
+      "community": 2,
+      "norm_label": "period_map (spanish period to integer)"
+    },
+    {
+      "label": "parse_escenario() (regex extractor for ID/Sede)",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "39:1-57:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "parse_escenario",
+      "community": 2,
+      "norm_label": "parse_escenario() (regex extractor for id/sede)"
+    },
+    {
+      "label": "Mapa de practica general Medicina 2025-1.xlsx (source data)",
+      "file_type": "code",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "30:1-30:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "mapa_practica_xlsx",
+      "community": 2,
+      "norm_label": "mapa de practica general medicina 2025-1.xlsx (source data)"
+    },
+    {
+      "label": "DataLoader (from src.core)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "18:1-18:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_dataloader",
+      "community": 2,
+      "norm_label": "dataloader (from src.core)"
+    },
+    {
+      "label": "Optimizer (MILP solver, from src.core)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "18:1-18:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_optimizer",
+      "community": 2,
+      "norm_label": "optimizer (milp solver, from src.core)"
+    },
+    {
+      "label": "ScoreCalculator (criterion normalizer)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "18:1-18:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_score_calculator",
+      "community": 2,
+      "norm_label": "scorecalculator (criterion normalizer)"
+    },
+    {
+      "label": "GroupOptimizer (grouped assignment solver)",
+      "file_type": "code",
+      "source_file": "app.py",
+      "source_location": "19:1-19:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_group_optimizer",
+      "community": 2,
+      "norm_label": "groupoptimizer (grouped assignment solver)"
+    },
+    {
+      "label": "Excel template sheets (05_Ponderaciones, 06_Rotaciones, 07_Demanda_Semestres)",
+      "file_type": "code",
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "180:1-182:5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_template_sheets",
+      "community": 2,
+      "norm_label": "excel template sheets (05_ponderaciones, 06_rotaciones, 07_demanda_semestres)"
+    },
+    {
+      "label": "DataLoader class",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "13",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_DataLoader",
+      "community": 3,
+      "norm_label": "dataloader class"
+    },
+    {
+      "label": "DataLoader.load_all",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "40",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_load_all",
+      "community": 6,
+      "norm_label": "dataloader.load_all"
+    },
+    {
+      "label": "DataLoader.load_rotaciones",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "184",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_load_rotaciones",
+      "community": 3,
+      "norm_label": "dataloader.load_rotaciones"
+    },
+    {
+      "label": "DataLoader.get_rotaciones_dict",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "193",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_get_rotaciones_dict",
+      "community": 3,
+      "norm_label": "dataloader.get_rotaciones_dict"
+    },
+    {
+      "label": "DataLoader.get_asignaturas_rotaciones",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "202",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_get_asignaturas_rotaciones",
+      "community": 3,
+      "norm_label": "dataloader.get_asignaturas_rotaciones"
+    },
+    {
+      "label": "DataLoader.get_ips_for_rotacion",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "211",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_get_ips_for_rotacion",
+      "community": 3,
+      "norm_label": "dataloader.get_ips_for_rotacion"
+    },
+    {
+      "label": "DataLoader.get_ponderaciones_dict",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "126",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_get_ponderaciones_dict",
+      "community": 6,
+      "norm_label": "dataloader.get_ponderaciones_dict"
+    },
+    {
+      "label": "DataLoader.validate_pesas",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "108",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_validate_pesas",
+      "community": 6,
+      "norm_label": "dataloader.validate_pesas"
+    },
+    {
+      "label": "DataLoader._to_float (static helper)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "30",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader__to_float",
+      "community": 6,
+      "norm_label": "dataloader._to_float (static helper)"
+    },
+    {
+      "label": "DataLoader.has_cupos_data",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "169",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_has_cupos_data",
+      "community": 6,
+      "norm_label": "dataloader.has_cupos_data"
+    },
+    {
+      "label": "DataLoader.has_costos_data",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "176",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_has_costos_data",
+      "community": 6,
+      "norm_label": "dataloader.has_costos_data"
+    },
+    {
+      "label": "DataFrame 'oferta' (from sheet 01_Oferta)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "46",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_oferta_df",
+      "community": 6,
+      "norm_label": "dataframe 'oferta' (from sheet 01_oferta)"
+    },
+    {
+      "label": "DataFrame 'calidad' (from sheet 03_Calidad)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "47",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_calidad_df",
+      "community": 6,
+      "norm_label": "dataframe 'calidad' (from sheet 03_calidad)"
+    },
+    {
+      "label": "DataFrame 'cupos' (from sheet 02_Oferta_x_Programa)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "48",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_cupos_df",
+      "community": 6,
+      "norm_label": "dataframe 'cupos' (from sheet 02_oferta_x_programa)"
+    },
+    {
+      "label": "DataFrame 'costos' (from sheet 04_Costo_del_Sitio)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "49",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_costos_df",
+      "community": 6,
+      "norm_label": "dataframe 'costos' (from sheet 04_costo_del_sitio)"
+    },
+    {
+      "label": "DataFrame 'ponderaciones' (from sheet 05_Ponderaciones)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "50",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_ponderaciones_df",
+      "community": 6,
+      "norm_label": "dataframe 'ponderaciones' (from sheet 05_ponderaciones)"
+    },
+    {
+      "label": "DataFrame 'rotaciones' (from sheet 06_Rotaciones or parser)",
+      "file_type": "code",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "61",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "data_loader_rotaciones_df",
+      "community": 3,
+      "norm_label": "dataframe 'rotaciones' (from sheet 06_rotaciones or parser)"
+    },
+    {
+      "label": "Optimizer class (MILP assignment)",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "14",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_Optimizer",
+      "community": 3,
+      "norm_label": "optimizer class (milp assignment)"
+    },
+    {
+      "label": "Optimizer.optimize",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "23",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_optimize",
+      "community": 3,
+      "norm_label": "optimizer.optimize"
+    },
+    {
+      "label": "GroupOptimizer class (MILP with group size constraints)",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "111",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_GroupOptimizer",
+      "community": 3,
+      "norm_label": "groupoptimizer class (milp with group size constraints)"
+    },
+    {
+      "label": "GroupOptimizer.optimize",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "119",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_groupoptimizer_optimize",
+      "community": 3,
+      "norm_label": "groupoptimizer.optimize"
+    },
+    {
+      "label": "GroupOptimizer.get_groups_summary",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "250",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_groupoptimizer_get_groups_summary",
+      "community": 34,
+      "norm_label": "groupoptimizer.get_groups_summary"
+    },
+    {
+      "label": "PuLP MILP (LpProblem, LpVariable, PULP_CBC_CMD)",
+      "file_type": "code",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "7",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "optimizer_pulp_milp",
+      "community": 3,
+      "norm_label": "pulp milp (lpproblem, lpvariable, pulp_cbc_cmd)"
+    },
+    {
+      "label": "src.core package public API (DataLoader, Optimizer, GroupOptimizer, ScoreCalculator)",
+      "file_type": "code",
+      "source_file": "src/core/__init__.py",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "core_init_module",
+      "community": 3,
+      "norm_label": "src.core package public api (dataloader, optimizer, groupoptimizer, scorecalculator)"
+    },
+    {
+      "label": "Plan: Modelo Refinado por Semestre (2026-06-05)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_modelo_refinado_por_semestre",
+      "community": 3,
+      "norm_label": "plan: modelo refinado por semestre (2026-06-05)"
+    },
+    {
+      "label": "Plan Task 1: scripts/parse_mapa_practica.py (Mapa de Pr\u00e1ctica parser)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "25",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_task_parser_mapa_practica",
+      "community": 3,
+      "norm_label": "plan task 1: scripts/parse_mapa_practica.py (mapa de practica parser)"
+    },
+    {
+      "label": "Plan Task 2: Extend DataLoader with load_rotaciones + get_rotaciones_dict",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "150",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_task_extend_dataloader",
+      "community": 3,
+      "norm_label": "plan task 2: extend dataloader with load_rotaciones + get_rotaciones_dict"
+    },
+    {
+      "label": "Plan Task 3: Add GroupOptimizer MILP class",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "211",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_task_groupoptimizer",
+      "community": 3,
+      "norm_label": "plan task 3: add groupoptimizer milp class"
+    },
+    {
+      "label": "Plan Task 4: Streamlit app.py 'Refinado por semestre' mode",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "394",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_task_app_refinado",
+      "community": 3,
+      "norm_label": "plan task 4: streamlit app.py 'refinado por semestre' mode"
+    },
+    {
+      "label": "Rationale: Group size constraints (semesters 5-8: 4-7 students; 9-12: 3-5 students) \u2014 pedagogical/administrative cohort limits per plan",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "50",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rationale_group_size_constraints",
+      "community": 3,
+      "norm_label": "rationale: group size constraints (semesters 5-8: 4-7 students; 9-12: 3-5 students) \u2014 pedagogical/administrative cohort limits per plan"
+    },
+    {
+      "label": "Rationale: Distribute students per semester (vs. aggregated) so groups of controlled size form and each rotation gets an IPS assignment that respects cupos",
+      "file_type": "rationale",
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rationale_refined_semester_model",
+      "community": 3,
+      "norm_label": "rationale: distribute students per semester (vs. aggregated) so groups of controlled size form and each rotation gets an ips assignment that respects cupos"
+    },
+    {
+      "label": "Rationale: Demanda and Rotaciones sheets are optional in DataLoader.load_all (graceful fallback to placeholder) \u2014 model can run with partial data",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "52",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rationale_optional_demanda",
+      "community": 6,
+      "norm_label": "rationale: demanda and rotaciones sheets are optional in dataloader.load_all (graceful fallback to placeholder) \u2014 model can run with partial data"
+    },
+    {
+      "label": "Rationale: validate_pesas requires sum of active weights = 1.0 (else ValueError) \u2014 guarantees score decomposition is a convex combination",
+      "file_type": "rationale",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "121",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rationale_pesos_sum_one",
+      "community": 6,
+      "norm_label": "rationale: validate_pesas requires sum of active weights = 1.0 (else valueerror) \u2014 guarantees score decomposition is a convex combination"
+    },
+    {
+      "label": "Rationale: GroupOptimizer uses Big-M style linking constraints (y <= max_group*x; y >= t - max_group*(1-x)) so binary x selects the IPS for a group and y carries student count",
+      "file_type": "rationale",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "186",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "rationale_groupoptimizer_bigm",
+      "community": 3,
+      "norm_label": "rationale: groupoptimizer uses big-m style linking constraints (y <= max_group*x; y >= t - max_group*(1-x)) so binary x selects the ips for a group and y carries student count"
     }
   ],
   "links": [
@@ -1643,7 +2530,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L36",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_demanda",
@@ -1653,7 +2540,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L55",
+      "source_location": "L57",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_get_config_options_from_upload",
@@ -1663,7 +2550,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L75",
+      "source_location": "L77",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_preview_capacidad",
@@ -1673,7 +2560,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L90",
+      "source_location": "L92",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_cupos",
@@ -1683,7 +2570,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L105",
+      "source_location": "L107",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_costos",
@@ -1693,7 +2580,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L123",
+      "source_location": "L125",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
@@ -1703,7 +2590,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L131",
+      "source_location": "L133",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_to_bool01",
@@ -1713,7 +2600,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L145",
+      "source_location": "L147",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_map_epp_exigidos",
@@ -1723,7 +2610,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L159",
+      "source_location": "L161",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_compute_scores_debug",
@@ -1733,7 +2620,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L169",
+      "source_location": "L171",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_generar_excel_resultados",
@@ -1743,7 +2630,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L339",
+      "source_location": "L341",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_procesar_datos",
@@ -1753,7 +2640,57 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L858",
+      "source_location": "L860",
+      "weight": 1.0,
+      "source": "app_py",
+      "target": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1061",
+      "weight": 1.0,
+      "source": "app_py",
+      "target": "modelo_opt_oficina_practicas_app_compute_scores",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1133",
+      "weight": 1.0,
+      "source": "app_py",
+      "target": "modelo_opt_oficina_practicas_app_render_heatmap_grupo_ips",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1154",
+      "weight": 1.0,
+      "source": "app_py",
+      "target": "modelo_opt_oficina_practicas_app_render_quadrant_calidad_costo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1199",
+      "weight": 1.0,
+      "source": "app_py",
+      "target": "modelo_opt_oficina_practicas_app_render_gauge_optimo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1237",
       "weight": 1.0,
       "source": "app_py",
       "target": "modelo_opt_oficina_practicas_app_main",
@@ -1774,7 +2711,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L397",
+      "source_location": "L399",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_demanda",
@@ -1784,9 +2721,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L43",
+      "source_location": "L45",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_43",
+      "source": "modelo_opt_oficina_practicas_app_rationale_45",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_demanda",
       "confidence_score": 1.0
     },
@@ -1795,7 +2732,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L875",
+      "source_location": "L1254",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "modelo_opt_oficina_practicas_app_get_config_options_from_upload",
@@ -1805,9 +2742,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L56",
+      "source_location": "L58",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_56",
+      "source": "modelo_opt_oficina_practicas_app_rationale_58",
       "target": "modelo_opt_oficina_practicas_app_get_config_options_from_upload",
       "confidence_score": 1.0
     },
@@ -1816,7 +2753,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L894",
+      "source_location": "L1326",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "modelo_opt_oficina_practicas_app_preview_capacidad",
@@ -1826,9 +2763,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L76",
+      "source_location": "L78",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_76",
+      "source": "modelo_opt_oficina_practicas_app_rationale_78",
       "target": "modelo_opt_oficina_practicas_app_preview_capacidad",
       "confidence_score": 1.0
     },
@@ -1837,7 +2774,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L376",
+      "source_location": "L378",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_cupos",
@@ -1847,9 +2784,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L91",
+      "source_location": "L93",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_91",
+      "source": "modelo_opt_oficina_practicas_app_rationale_93",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_cupos",
       "confidence_score": 1.0
     },
@@ -1858,7 +2795,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L377",
+      "source_location": "L379",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_costos",
@@ -1868,9 +2805,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L106",
+      "source_location": "L108",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_106",
+      "source": "modelo_opt_oficina_practicas_app_rationale_108",
       "target": "modelo_opt_oficina_practicas_app_generate_ejemplo_costos",
       "confidence_score": 1.0
     },
@@ -1879,19 +2816,31 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L599",
+      "source_location": "L601",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
       "confidence_score": 1.0
     },
     {
-      "relation": "rationale_for",
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L124",
+      "source_location": "L879",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_124",
+      "source": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "target": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1067",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_compute_scores",
       "target": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
       "confidence_score": 1.0
     },
@@ -1899,9 +2848,19 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L132",
+      "source_location": "L126",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_132",
+      "source": "modelo_opt_oficina_practicas_app_rationale_126",
+      "target": "modelo_opt_oficina_practicas_app_clean_criterio_codigo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L134",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_rationale_134",
       "target": "modelo_opt_oficina_practicas_app_to_bool01",
       "confidence_score": 1.0
     },
@@ -1909,9 +2868,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L146",
+      "source_location": "L148",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_146",
+      "source": "modelo_opt_oficina_practicas_app_rationale_148",
       "target": "modelo_opt_oficina_practicas_app_map_epp_exigidos",
       "confidence_score": 1.0
     },
@@ -1920,7 +2879,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L707",
+      "source_location": "L709",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "modelo_opt_oficina_practicas_app_compute_scores_debug",
@@ -1930,9 +2889,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L160",
+      "source_location": "L162",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_160",
+      "source": "modelo_opt_oficina_practicas_app_rationale_162",
       "target": "modelo_opt_oficina_practicas_app_compute_scores_debug",
       "confidence_score": 1.0
     },
@@ -1941,7 +2900,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L960",
+      "source_location": "L1498",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "modelo_opt_oficina_practicas_app_generar_excel_resultados",
@@ -1951,9 +2910,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L170",
+      "source_location": "L172",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_170",
+      "source": "modelo_opt_oficina_practicas_app_rationale_172",
       "target": "modelo_opt_oficina_practicas_app_generar_excel_resultados",
       "confidence_score": 1.0
     },
@@ -1962,7 +2921,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L918",
+      "source_location": "L1361",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "modelo_opt_oficina_practicas_app_procesar_datos",
@@ -1972,9 +2931,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "app.py",
-      "source_location": "L348",
+      "source_location": "L350",
       "weight": 1.0,
-      "source": "modelo_opt_oficina_practicas_app_rationale_348",
+      "source": "modelo_opt_oficina_practicas_app_rationale_350",
       "target": "modelo_opt_oficina_practicas_app_procesar_datos",
       "confidence_score": 1.0
     },
@@ -1984,7 +2943,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L664",
+      "source_location": "L666",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "scripts_modelo_v1_lookup_costo"
@@ -1995,7 +2954,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L712",
+      "source_location": "L714",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_procesar_datos",
       "target": "core_optimizer_optimizer"
@@ -2003,10 +2962,86 @@
     {
       "relation": "calls",
       "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1355",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_main",
+      "target": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L860",
+      "source_location": "L885",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "target": "scripts_parse_mapa_practica_get_group_constraints"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app.py",
+      "source_location": "L1022",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_procesar_refinado",
+      "target": "core_optimizer_groupoptimizer"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1062",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_rationale_1062",
+      "target": "modelo_opt_oficina_practicas_app_compute_scores",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1470",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_main",
+      "target": "modelo_opt_oficina_practicas_app_render_heatmap_grupo_ips",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1471",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_main",
+      "target": "modelo_opt_oficina_practicas_app_render_quadrant_calidad_costo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "app.py",
+      "source_location": "L1472",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_main",
+      "target": "modelo_opt_oficina_practicas_app_render_gauge_optimo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app.py",
+      "source_location": "L1239",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_header"
@@ -2017,7 +3052,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L868",
+      "source_location": "L1247",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_upload_section"
@@ -2028,7 +3063,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L886",
+      "source_location": "L1265",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_config_section"
@@ -2039,7 +3074,18 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L915",
+      "source_location": "L1293",
+      "weight": 1.0,
+      "source": "modelo_opt_oficina_practicas_app_main",
+      "target": "scripts_parse_mapa_practica_get_group_constraints"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app.py",
+      "source_location": "L1347",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "core_data_loader_dataloader"
@@ -2050,7 +3096,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L939",
+      "source_location": "L1477",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_results_summary"
@@ -2061,7 +3107,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L952",
+      "source_location": "L1490",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_asignaciones_table"
@@ -2072,7 +3118,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L954",
+      "source_location": "L1492",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_demanda_vs_asignacion"
@@ -2083,7 +3129,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L956",
+      "source_location": "L1494",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_capacidad_chart"
@@ -2094,10 +3140,40 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app.py",
-      "source_location": "L957",
+      "source_location": "L1495",
       "weight": 1.0,
       "source": "modelo_opt_oficina_practicas_app_main",
       "target": "visualization_init_render_debug_info"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "scripts_parse_mapa_practica_py",
+      "target": "scripts_parse_mapa_practica_get_group_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "scripts_parse_mapa_practica_py",
+      "target": "scripts_parse_mapa_practica_parse_escenario",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "scripts_parse_mapa_practica_py",
+      "target": "scripts_parse_mapa_practica_parse_mapa_practica",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -2343,7 +3419,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0,
       "source": "src_core_data_loader_py",
       "target": "core_data_loader_to_float",
@@ -2384,7 +3460,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L39",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_load_all",
@@ -2394,7 +3470,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L71",
+      "source_location": "L108",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_validate_pesas",
@@ -2404,7 +3480,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L89",
+      "source_location": "L126",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_get_ponderaciones_dict",
@@ -2414,7 +3490,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L104",
+      "source_location": "L141",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_get_available_set_ids",
@@ -2424,7 +3500,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L118",
+      "source_location": "L155",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_get_available_semestres",
@@ -2434,7 +3510,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L132",
+      "source_location": "L169",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_has_cupos_data",
@@ -2444,10 +3520,50 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L139",
+      "source_location": "L176",
       "weight": 1.0,
       "source": "core_data_loader_dataloader",
       "target": "core_data_loader_dataloader_has_costos_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L184",
+      "weight": 1.0,
+      "source": "core_data_loader_dataloader",
+      "target": "core_data_loader_dataloader_load_rotaciones",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L193",
+      "weight": 1.0,
+      "source": "core_data_loader_dataloader",
+      "target": "core_data_loader_dataloader_get_rotaciones_dict",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L202",
+      "weight": 1.0,
+      "source": "core_data_loader_dataloader",
+      "target": "core_data_loader_dataloader_get_asignaturas_rotaciones",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L211",
+      "weight": 1.0,
+      "source": "core_data_loader_dataloader",
+      "target": "core_data_loader_dataloader_get_ips_for_rotacion",
       "confidence_score": 1.0
     },
     {
@@ -2465,7 +3581,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L79",
+      "source_location": "L116",
       "weight": 1.0,
       "source": "core_data_loader_dataloader_validate_pesas",
       "target": "core_data_loader_to_float",
@@ -2476,7 +3592,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L97",
+      "source_location": "L134",
       "weight": 1.0,
       "source": "core_data_loader_dataloader_get_ponderaciones_dict",
       "target": "core_data_loader_to_float",
@@ -2486,9 +3602,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L40",
+      "source_location": "L41",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_40",
+      "source": "core_data_loader_rationale_41",
       "target": "core_data_loader_dataloader_load_all",
       "confidence_score": 1.0
     },
@@ -2496,9 +3612,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L72",
+      "source_location": "L109",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_72",
+      "source": "core_data_loader_rationale_109",
       "target": "core_data_loader_dataloader_validate_pesas",
       "confidence_score": 1.0
     },
@@ -2506,9 +3622,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L90",
+      "source_location": "L127",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_90",
+      "source": "core_data_loader_rationale_127",
       "target": "core_data_loader_dataloader_get_ponderaciones_dict",
       "confidence_score": 1.0
     },
@@ -2516,9 +3632,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L105",
+      "source_location": "L142",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_105",
+      "source": "core_data_loader_rationale_142",
       "target": "core_data_loader_dataloader_get_available_set_ids",
       "confidence_score": 1.0
     },
@@ -2526,9 +3642,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L119",
+      "source_location": "L156",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_119",
+      "source": "core_data_loader_rationale_156",
       "target": "core_data_loader_dataloader_get_available_semestres",
       "confidence_score": 1.0
     },
@@ -2536,9 +3652,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L133",
+      "source_location": "L170",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_133",
+      "source": "core_data_loader_rationale_170",
       "target": "core_data_loader_dataloader_has_cupos_data",
       "confidence_score": 1.0
     },
@@ -2546,10 +3662,50 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/data_loader.py",
-      "source_location": "L140",
+      "source_location": "L177",
       "weight": 1.0,
-      "source": "core_data_loader_rationale_140",
+      "source": "core_data_loader_rationale_177",
       "target": "core_data_loader_dataloader_has_costos_data",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L185",
+      "weight": 1.0,
+      "source": "core_data_loader_rationale_185",
+      "target": "core_data_loader_dataloader_load_rotaciones",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L194",
+      "weight": 1.0,
+      "source": "core_data_loader_rationale_194",
+      "target": "core_data_loader_dataloader_get_rotaciones_dict",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L203",
+      "weight": 1.0,
+      "source": "core_data_loader_rationale_203",
+      "target": "core_data_loader_dataloader_get_asignaturas_rotaciones",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/data_loader.py",
+      "source_location": "L212",
+      "weight": 1.0,
+      "source": "core_data_loader_rationale_212",
+      "target": "core_data_loader_dataloader_get_ips_for_rotacion",
       "confidence_score": 1.0
     },
     {
@@ -2729,6 +3885,16 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "src_core_optimizer_py",
+      "target": "core_optimizer_groupoptimizer",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/core/optimizer.py",
@@ -2796,6 +3962,56 @@
       "weight": 1.0,
       "source": "core_optimizer_rationale_107",
       "target": "core_optimizer_optimizer_get_objective_value",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "source": "core_optimizer_groupoptimizer",
+      "target": "core_optimizer_groupoptimizer_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "core_optimizer_groupoptimizer",
+      "target": "core_optimizer_groupoptimizer_optimize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L247",
+      "weight": 1.0,
+      "source": "core_optimizer_groupoptimizer",
+      "target": "core_optimizer_groupoptimizer_get_objective_value",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L250",
+      "weight": 1.0,
+      "source": "core_optimizer_groupoptimizer",
+      "target": "core_optimizer_groupoptimizer_get_groups_summary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/core/optimizer.py",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "core_optimizer_rationale_112",
+      "target": "core_optimizer_groupoptimizer",
       "confidence_score": 1.0
     },
     {
@@ -2869,154 +4085,14 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "data_loader"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "optimizer"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "calculator"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "visualization"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "utils"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "modelo_v1"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.65,
-      "source_file": "generar_presentacion.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "generar_presentacion",
-      "target": "app"
-    },
-    {
-      "relation": "implements",
+      "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "app.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "app",
-      "target": "fallback_strategy"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "generar_presentacion.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "generar_presentacion",
-      "target": "milp_optimization"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "scripts/debug_tipos.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "debug_tipos",
-      "target": "data_loader"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "scripts/debug_merge.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "debug_merge",
-      "target": "data_loader"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "scripts/debug_cupos.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "debug_cupos",
-      "target": "data_loader"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "scripts/diagn\u00f3stico.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "diagnostico",
-      "target": "data_loader"
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
       "source_file": "scripts/modelo_v1.py",
       "source_location": null,
       "weight": 1.0,
       "source": "modelo_v1",
-      "target": "milp_optimization"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "scripts/modelo_v1.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "modelo_v1",
-      "target": "excel_template_v3"
+      "target": "calculator"
     },
     {
       "relation": "references",
@@ -3027,46 +4103,6 @@
       "weight": 1.0,
       "source": "salida_modelo",
       "target": "modelo_v1"
-    },
-    {
-      "relation": "semantically_similar_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "scripts/modelo_v1.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "modelo_v1",
-      "target": "optimizer"
-    },
-    {
-      "relation": "semantically_similar_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "scripts/modelo_v1.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "modelo_v1",
-      "target": "calculator"
-    },
-    {
-      "relation": "implements",
-      "confidence": "INFERRED",
-      "confidence_score": 0.75,
-      "source_file": "scripts/modelo_v1.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "modelo_v1",
-      "target": "fallback_strategy"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/data_loader.py",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "data_loader",
-      "target": "excel_template_v3"
     },
     {
       "relation": "implements",
@@ -3089,14 +4125,24 @@
       "target": "score_normalization"
     },
     {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/core/optimizer.py",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/core/calculator.py",
       "source_location": null,
       "weight": 1.0,
-      "source": "optimizer",
-      "target": "milp_optimization"
+      "source": "score_normalization",
+      "target": "multicriteria_scoring"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "README.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "readme",
+      "target": "guia_llenado"
     },
     {
       "relation": "semantically_similar_to",
@@ -3111,42 +4157,12 @@
     {
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "readme",
-      "target": "guia_llenado"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
-      "confidence_score": 0.7,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "readme",
-      "target": "analisis_resultados"
-    },
-    {
-      "relation": "conceptually_related_to",
-      "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "README.md",
       "source_location": null,
       "weight": 1.0,
       "source": "readme",
       "target": "inicio_rapido"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "GU\u00cdA_LLENADO_PLANTILLA.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "guia_llenado",
-      "target": "excel_template_v3"
     },
     {
       "relation": "references",
@@ -3159,40 +4175,820 @@
       "target": "salida_modelo"
     },
     {
-      "relation": "rationale_for",
+      "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.7,
-      "source_file": "app.py",
+      "source_file": "README.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "fallback_strategy",
-      "target": "milp_optimization"
+      "source": "readme",
+      "target": "analisis_resultados"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1361:1-1370:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_procesar_datos"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1355:1-1359:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_procesar_refinado"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1498:1-1498:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_generar_excel"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1293:1-1293:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "parse_get_group_constraints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1347:1-1348:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "concept_dataloader"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1304:1-1311:5",
+      "weight": 1.0,
+      "source": "app_main",
+      "target": "app_sem_set_map"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "666:1-666:5",
+      "weight": 1.0,
+      "source": "app_procesar_datos",
+      "target": "app_lookup_costo"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "601:1-619:5",
+      "weight": 1.0,
+      "source": "app_procesar_datos",
+      "target": "app_clean_criterio_codigo"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "714:1-715:5",
+      "weight": 1.0,
+      "source": "app_procesar_datos",
+      "target": "concept_optimizer"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "477:1-477:5",
+      "weight": 1.0,
+      "source": "app_procesar_datos",
+      "target": "concept_score_calculator"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "341:1-857:5",
+      "weight": 1.0,
+      "source": "app_procesar_datos",
+      "target": "concept_dataloader"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "11:1-1352:5",
+      "weight": 1.0,
+      "source": "v4_plantilla_output",
+      "target": "app_procesar_datos"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "885:1-885:5",
+      "weight": 1.0,
+      "source": "app_procesar_refinado",
+      "target": "parse_get_group_constraints"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1022:1-1030:5",
+      "weight": 1.0,
+      "source": "app_procesar_refinado",
+      "target": "concept_group_optimizer"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "911:1-911:5",
+      "weight": 1.0,
+      "source": "app_procesar_refinado",
+      "target": "concept_score_calculator"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "879:1-879:5",
+      "weight": 1.0,
+      "source": "app_procesar_refinado",
+      "target": "app_clean_criterio_codigo"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "app.py",
+      "source_location": "885:1-887:5",
+      "weight": 1.0,
+      "source": "app_procesar_refinado",
+      "target": "parse_grupo_constraints"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "11:1-1346:5",
+      "weight": 1.0,
+      "source": "v4_plantilla_output",
+      "target": "app_procesar_refinado"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1067:1-1067:5",
+      "weight": 1.0,
+      "source": "app_compute_scores",
+      "target": "app_clean_criterio_codigo"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1088:1-1088:5",
+      "weight": 1.0,
+      "source": "app_compute_scores",
+      "target": "concept_score_calculator"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.3,
+      "source_file": "app.py",
+      "source_location": "523:1-130:5",
+      "weight": 0.3,
+      "source": "app_lookup_costo",
+      "target": "app_clean_criterio_codigo"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app.py",
+      "source_location": "1510:1-1585:5",
+      "weight": 1.0,
+      "source": "app_milp_model_doc",
+      "target": "concept_optimizer"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "app.py",
+      "source_location": "1528:1-1543:5",
+      "weight": 1.0,
+      "source": "app_milp_model_doc",
+      "target": "concept_score_calculator"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "46:1-149:5",
+      "weight": 0.9,
+      "source": "v4_pond_sets",
+      "target": "app_sem_set_map"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "19:1-19:5",
+      "weight": 1.0,
+      "source": "generar_plantilla_v4",
+      "target": "parse_mapa_practica_fn"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "151:1-173:5",
+      "weight": 1.0,
+      "source": "generar_plantilla_v4",
+      "target": "v4_pond_sets"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "34:1-42:5",
+      "weight": 1.0,
+      "source": "generar_plantilla_v4",
+      "target": "v4_demanda_data"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "11:1-224:5",
+      "weight": 1.0,
+      "source": "generar_plantilla_v4",
+      "target": "v4_plantilla_output"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "151:1-182:5",
+      "weight": 1.0,
+      "source": "v4_pond_sets",
+      "target": "concept_template_sheets"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "34:1-173:5",
+      "weight": 1.0,
+      "source": "v4_pond_sets",
+      "target": "v4_demanda_data"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/generar_plantilla_v4.py",
+      "source_location": "180:1-182:5",
+      "weight": 1.0,
+      "source": "v4_plantilla_output",
+      "target": "concept_template_sheets"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "30:1-11:5",
+      "weight": 0.7,
+      "source": "mapa_practica_xlsx",
+      "target": "v4_plantilla_output"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "73:1-81:5",
+      "weight": 1.0,
+      "source": "parse_mapa_practica_fn",
+      "target": "parse_period_map"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "75:1-75:5",
+      "weight": 1.0,
+      "source": "parse_mapa_practica_fn",
+      "target": "parse_escenario"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "30:1-61:5",
+      "weight": 1.0,
+      "source": "parse_mapa_practica_fn",
+      "target": "mapa_practica_xlsx"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "19:1-36:5",
+      "weight": 1.0,
+      "source": "parse_grupo_constraints",
+      "target": "parse_get_group_constraints"
+    },
+    {
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "scripts/parse_mapa_practica.py",
+      "source_location": "39:1-57:5",
+      "weight": 1.0,
+      "source": "parse_escenario",
+      "target": "mapa_practica_xlsx"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app.py",
+      "source_location": "18:1-19:5",
+      "weight": 0.8,
+      "source": "concept_optimizer",
+      "target": "concept_group_optimizer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/__init__.py",
+      "source_location": "5",
+      "weight": 1.0,
+      "source": "core_init_module",
+      "target": "data_loader_DataLoader"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "7",
+      "weight": 1.0,
+      "source": "plan_modelo_refinado_por_semestre",
+      "target": "data_loader_DataLoader"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "46",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_oferta_df"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "47",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_calidad_df"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "48",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_cupos_df"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "49",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_costos_df"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "50",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_ponderaciones_df"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "61",
+      "weight": 1.0,
+      "source": "data_loader_load_all",
+      "target": "data_loader_rotaciones_df"
     },
     {
       "relation": "rationale_for",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "src/core/calculator.py",
-      "source_location": null,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "52",
+      "weight": 0.85,
+      "source": "rationale_optional_demanda",
+      "target": "data_loader_load_all"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "186",
       "weight": 1.0,
-      "source": "score_normalization",
-      "target": "multicriteria_scoring"
+      "source": "data_loader_load_rotaciones",
+      "target": "data_loader_rotaciones_df"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "155",
+      "weight": 1.0,
+      "source": "plan_task_extend_dataloader",
+      "target": "data_loader_load_rotaciones"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "423",
+      "weight": 1.0,
+      "source": "plan_task_app_refinado",
+      "target": "data_loader_load_rotaciones"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "195",
+      "weight": 1.0,
+      "source": "data_loader_get_rotaciones_dict",
+      "target": "data_loader_rotaciones_df"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "138",
+      "weight": 0.9,
+      "source": "optimizer_groupoptimizer_optimize",
+      "target": "data_loader_get_rotaciones_dict"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "169",
+      "weight": 1.0,
+      "source": "plan_task_extend_dataloader",
+      "target": "data_loader_get_rotaciones_dict"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "432",
+      "weight": 1.0,
+      "source": "plan_task_app_refinado",
+      "target": "data_loader_get_rotaciones_dict"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "204",
+      "weight": 1.0,
+      "source": "data_loader_get_asignaturas_rotaciones",
+      "target": "data_loader_rotaciones_df"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "133",
+      "weight": 0.85,
+      "source": "optimizer_groupoptimizer_optimize",
+      "target": "data_loader_get_asignaturas_rotaciones"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "433",
+      "weight": 1.0,
+      "source": "plan_task_app_refinado",
+      "target": "data_loader_get_asignaturas_rotaciones"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "213",
+      "weight": 1.0,
+      "source": "data_loader_get_ips_for_rotacion",
+      "target": "data_loader_rotaciones_df"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "134",
+      "weight": 1.0,
+      "source": "data_loader_get_ponderaciones_dict",
+      "target": "data_loader__to_float"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "128",
+      "weight": 1.0,
+      "source": "data_loader_get_ponderaciones_dict",
+      "target": "data_loader_ponderaciones_df"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "425",
+      "weight": 1.0,
+      "source": "plan_task_app_refinado",
+      "target": "data_loader_get_ponderaciones_dict"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "116",
+      "weight": 1.0,
+      "source": "data_loader_validate_pesas",
+      "target": "data_loader__to_float"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "110",
+      "weight": 1.0,
+      "source": "data_loader_validate_pesas",
+      "target": "data_loader_ponderaciones_df"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "121",
+      "weight": 0.9,
+      "source": "rationale_pesos_sum_one",
+      "target": "data_loader_validate_pesas"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "171",
+      "weight": 1.0,
+      "source": "data_loader_has_cupos_data",
+      "target": "data_loader_cupos_df"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/data_loader.py",
+      "source_location": "178",
+      "weight": 1.0,
+      "source": "data_loader_has_costos_data",
+      "target": "data_loader_costos_df"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "25",
+      "weight": 0.9,
+      "source": "plan_task_parser_mapa_practica",
+      "target": "data_loader_rotaciones_df"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/__init__.py",
+      "source_location": "6",
+      "weight": 1.0,
+      "source": "core_init_module",
+      "target": "optimizer_Optimizer"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "46",
+      "weight": 1.0,
+      "source": "optimizer_optimize",
+      "target": "optimizer_pulp_milp"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "14",
+      "weight": 0.7,
+      "source": "optimizer_optimize",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/__init__.py",
+      "source_location": "6",
+      "weight": 1.0,
+      "source": "core_init_module",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "7",
+      "weight": 1.0,
+      "source": "plan_modelo_refinado_por_semestre",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "211",
+      "weight": 1.0,
+      "source": "plan_task_groupoptimizer",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "404",
+      "weight": 1.0,
+      "source": "plan_task_app_refinado",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "5",
+      "weight": 1.0,
+      "source": "rationale_refined_semester_model",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "50",
+      "weight": 0.9,
+      "source": "rationale_group_size_constraints",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "186",
+      "weight": 0.9,
+      "source": "rationale_groupoptimizer_bigm",
+      "target": "optimizer_GroupOptimizer"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/core/optimizer.py",
+      "source_location": "145",
+      "weight": 1.0,
+      "source": "optimizer_groupoptimizer_optimize",
+      "target": "optimizer_pulp_milp"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-06-05-modelo-refinado-por-semestre.md",
+      "source_location": "5",
+      "weight": 1.0,
+      "source": "rationale_refined_semester_model",
+      "target": "plan_modelo_refinado_por_semestre"
     }
   ],
   "hyperedges": [
     {
-      "id": "milp_optimization_pipeline",
-      "label": "MILP Optimization Pipeline",
+      "id": "debug_diagnostic_suite",
+      "label": "Debug and Diagnostic Suite",
       "nodes": [
-        "app",
-        "data_loader",
-        "calculator",
-        "optimizer"
+        "debug_tipos",
+        "debug_merge",
+        "debug_cupos",
+        "diagnostico"
       ],
-      "relation": "implement",
+      "relation": "form",
       "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "app.py"
+      "confidence_score": 0.8,
+      "source_file": "scripts/debug_tipos.py"
     },
     {
       "id": "project_documentation_suite",
@@ -3208,21 +5004,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 0.9,
       "source_file": "README.md"
-    },
-    {
-      "id": "debug_diagnostic_suite",
-      "label": "Debug and Diagnostic Suite",
-      "nodes": [
-        "debug_tipos",
-        "debug_merge",
-        "debug_cupos",
-        "diagnostico"
-      ],
-      "relation": "form",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "scripts/debug_tipos.py"
     }
   ],
-  "built_at_commit": "6efa23f1d8edc143cdd26ddd2f890dc2f1bcf76d"
+  "built_at_commit": "4507a69ec43a80d96435a85af4cb2dc35b1ce12f"
 }
