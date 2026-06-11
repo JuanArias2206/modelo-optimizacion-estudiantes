@@ -1149,6 +1149,7 @@ def _render_heatmap_grupo_ips(df_asig, key_suffix=""):
     )
     fig.update_xaxes(tickangle=45)
     st.plotly_chart(fig, use_container_width=True, key=f"heatmap_score_{key_suffix}")
+    st.caption("Cada celda muestra el score promedio de la IPS para un grupo. Verde = alto, rojo = bajo. Sirve para detectar si un grupo está cayendo sistemáticamente en IPS de baja calidad.")
 
 
 def _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix=""):
@@ -1194,44 +1195,7 @@ def _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix=""):
     fig.add_vline(x=df_q["Costo_%"].median(), line_dash="dot", line_color="gray", opacity=0.5)
     fig.add_hline(y=df_q["Score"].median(), line_dash="dot", line_color="gray", opacity=0.5)
     st.plotly_chart(fig, use_container_width=True, key=f"quadrant_{key_suffix}")
-
-
-def _render_gauge_optimo(results, df_asig, key_suffix=""):
-    import plotly.graph_objects as go
-    if "scores" not in results or not results["scores"]:
-        return
-    max_score = max(results["scores"].values()) if results["scores"] else 0
-    if max_score <= 0:
-        return
-    obj = results.get("obj_value") or 0
-    total_est = df_asig["Estudiantes"].sum() if not df_asig.empty else 0
-    promedio_actual = obj / total_est if total_est > 0 else 0
-    eficiencia_pct = min((promedio_actual / max_score) * 100, 100) if max_score > 0 else 0
-
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
-        value=eficiencia_pct,
-        number={"suffix": "%"},
-        domain={"x": [0, 1], "y": [0, 1]},
-        title={"text": "Eficiencia vs Mejor IPS Disponible"},
-        delta={"reference": 100, "increasing": {"color": "green"}, "decreasing": {"color": "red"}},
-        gauge={
-            "axis": {"range": [0, 100]},
-            "bar": {"color": "darkblue"},
-            "steps": [
-                {"range": [0, 50], "color": "#ffcccc"},
-                {"range": [50, 75], "color": "#ffffcc"},
-                {"range": [75, 100], "color": "#ccffcc"},
-            ],
-            "threshold": {
-                "line": {"color": "green", "width": 4},
-                "thickness": 0.75,
-                "value": 100,
-            },
-        },
-    ))
-    st.plotly_chart(fig, use_container_width=True, key=f"gauge_{key_suffix}")
-    st.caption(f"Score promedio actual: {promedio_actual:.4f} | Mejor score posible: {max_score:.4f}")
+    st.caption("Cada burbuja es una IPS. Eje X = % de contraprestación que cobra (menor = más barato para el estudiante), eje Y = score multicriterio (mayor = mejor), tamaño = cupos efectivamente asignados. El cuadrante **arriba-izquierda** agrupa la frontera eficiente: alto score y bajo costo. Las líneas punteadas son las medianas de cada eje.")
 
 
 def main():
@@ -1255,26 +1219,35 @@ def main():
     default_set = "SET-MEDICINA" if "SET-MEDICINA" in set_options else (set_options[0] if set_options else "SET001")
     default_sem = "2026-1" if "2026-1" in semestre_options else (semestre_options[0] if semestre_options else "2026-1")
 
-    (
-        set_id,
-        semestre,
-        total_estudiantes,
-        programa_manual,
-        tipo_est_manual,
-        tipo_practica_manual,
-    ) = render_config_section(
-        set_options=set_options,
-        semestre_options=semestre_options,
-        default_set=default_set,
-        default_semestre=default_sem,
-    )
-
     st.markdown("---")
     modo = st.radio(
         "Modo de optimización",
         ["Agregado (actual)", "Refinado por semestre"],
         horizontal=True,
+        index=1,
     )
+
+    set_id = default_set
+    semestre = default_sem
+    total_estudiantes = 80
+    programa_manual = "Medicina"
+    tipo_est_manual = "Pregrado"
+    tipo_practica_manual = "Rotación pregrado"
+
+    if modo == "Agregado (actual)":
+        (
+            set_id,
+            semestre,
+            total_estudiantes,
+            programa_manual,
+            tipo_est_manual,
+            tipo_practica_manual,
+        ) = render_config_section(
+            set_options=set_options,
+            semestre_options=semestre_options,
+            default_set=default_set,
+            default_semestre=default_sem,
+        )
 
     semestre_plan = None
     n_estudiantes_refinado = None
@@ -1346,6 +1319,7 @@ def main():
                 set_id_to_use = set_id_refinado if modo == "Refinado por semestre" else set_id
                 loader = DataLoader(tmp_path, set_id_to_use, semestre)
                 loader.load_all()
+                st.session_state.loader = loader
 
                 if modo == "Refinado por semestre":
                     if loader.rotaciones is None or loader.rotaciones.empty:
@@ -1420,6 +1394,17 @@ def main():
                 display_cols = [c for c in display_cols if c in df_asig.columns]
                 st.dataframe(df_asig[display_cols], use_container_width=True, hide_index=True)
 
+                _buf = BytesIO()
+                with pd.ExcelWriter(_buf, engine="openpyxl") as _writer:
+                    df_asig[display_cols].to_excel(_writer, index=False, sheet_name="Asignaciones")
+                st.download_button(
+                    label="📥 Descargar en Excel",
+                    data=_buf.getvalue(),
+                    file_name="asignaciones_grupo_asignatura_rotacion.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="download_asignaciones_grupo"
+                )
+
                 st.subheader("📊 Distribución por Asignatura")
                 import plotly.express as px
                 cols_dist = 1
@@ -1468,8 +1453,7 @@ def main():
 
                 st.subheader("📈 Análisis Avanzado")
                 _render_heatmap_grupo_ips(df_asig, key_suffix="avanz")
-                _render_quadrant_calidad_costo(df_asig, results, loader, key_suffix="avanz")
-                _render_gauge_optimo(results, df_asig, key_suffix="avanz")
+                _render_quadrant_calidad_costo(df_asig, results, st.session_state.loader, key_suffix="avanz")
             else:
                 st.warning("No se encontraron asignaciones factibles.")
         else:
