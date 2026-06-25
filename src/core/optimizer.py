@@ -4,7 +4,10 @@ Modelo de optimización MILP para asignación de estudiantes
 
 import pandas as pd
 import numpy as np
-from pulp import LpProblem, LpVariable, LpMaximize, lpSum, LpInteger, PULP_CBC_CMD
+from pulp import (
+    LpProblem, LpVariable, LpMaximize, lpSum, LpInteger, PULP_CBC_CMD,
+    value as pulp_value, LpStatus,
+)
 from typing import Dict, Tuple, List
 import logging
 
@@ -115,6 +118,7 @@ class GroupOptimizer:
         self.verbose = verbose
         self.model = None
         self.results = None
+        self._score_optimo = None
 
     def optimize(
         self,
@@ -159,13 +163,21 @@ class GroupOptimizer:
                     x[(g, a, r, j)] = LpVariable(f"x_{g}_{a}_{r}_{j}", cat="Binary")
                     y[(g, a, r, j)] = LpVariable(f"y_{g}_{a}_{r}_{j}", lowBound=0, cat=LpInteger)
 
-        self.model += lpSum(
-            scores.get(j, 0.0) * y[(g, a, r, j)]
+        # Score por (asignatura, IPS) si está disponible; si no, por IPS (compat.)
+        def _score(a, j):
+            if (a, j) in scores:
+                return scores[(a, j)]
+            return scores.get(j, 0.0)
+
+        # Expresión de calidad (objetivo primario): maximizar score ponderado
+        score_expr = lpSum(
+            _score(a, j) * y[(g, a, r, j)]
             for g in range(g_max)
             for (a, r) in ar_pairs
             for j in ips_by_ar.get((a, r), [])
             if (g, a, r, j) in y
         )
+        self.model += score_expr
 
         self.model += lpSum(t[g] for g in range(g_max)) == n_estudiantes, "Total_estudiantes"
 
@@ -214,9 +226,39 @@ class GroupOptimizer:
                         f"Cap_{a}_{r}_{j}",
                     )
 
+        # ===========================================================
+        # OPTIMIZACIÓN LEXICOGRÁFICA EN DOS FASES
+        # -----------------------------------------------------------
+        # Fase 1: maximizar la calidad total (score).
+        # Fase 2: manteniendo la calidad óptima, MINIMIZAR el número de
+        #         grupos activos. Esto evita la fragmentación degenerada
+        #         (p.ej. 3 grupos de 4-6 en vez de 2 grupos de 7 para
+        #         una IPS con 14 cupos): a igual calidad, el modelo
+        #         prefiere llenar los grupos hasta max_group.
+        # ===========================================================
         solver = PULP_CBC_CMD(msg=self.verbose, timeLimit=time_limit)
+
+        # ---- Fase 1: calidad ----
         status = self.model.solve(solver)
-        logger.info(f"GroupOptimizer status: {status}")
+        logger.info(f"GroupOptimizer fase 1 (calidad) status: {LpStatus[status]}")
+
+        # ---- Fase 2: consolidación de grupos ----
+        if LpStatus[status] == "Optimal":
+            p_star = pulp_value(score_expr)
+            # Piso de calidad: no perder más que una tolerancia numérica
+            tol = max(1e-4, abs(p_star) * 1e-6) if p_star is not None else 1e-4
+            self.model += (score_expr >= p_star - tol, "Lex_piso_calidad")
+            # Nuevo objetivo: minimizar grupos activos (maximizar su negativo)
+            self.model.setObjective(-lpSum(z[g] for g in range(g_max)))
+            status2 = self.model.solve(solver)
+            logger.info(
+                f"GroupOptimizer fase 2 (consolidación) status: {LpStatus[status2]} | "
+                f"calidad={p_star:.4f} | grupos={int(round(-pulp_value(self.model.objective)))}"
+            )
+            # Guardar la calidad óptima para reportes
+            self._score_optimo = p_star
+        else:
+            self._score_optimo = pulp_value(score_expr)
 
         results = []
         for g in range(g_max):
@@ -233,7 +275,7 @@ class GroupOptimizer:
                                 "Rotacion": r,
                                 "ID_Institucion": j,
                                 "Estudiantes": int(round(y[(g, a, r, j)].value())),
-                                "Score_IPS": scores.get(j, 0.0),
+                                "Score_IPS": _score(a, j),
                             })
 
         self.results = pd.DataFrame(results)
@@ -245,7 +287,9 @@ class GroupOptimizer:
         return self.results
 
     def get_objective_value(self) -> float:
-        return self.model.objective.value() if self.model else None
+        # Tras la fase 2 el objetivo del modelo es -Σz (nº de grupos),
+        # por lo que devolvemos la calidad óptima guardada en fase 1.
+        return getattr(self, "_score_optimo", None)
 
     def get_groups_summary(self) -> pd.DataFrame:
         if self.results is None or self.results.empty:

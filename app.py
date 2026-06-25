@@ -74,6 +74,52 @@ def get_config_options_from_upload(uploaded_file):
         return [], []
 
 
+def get_asignaturas_for_semestre(uploaded_file, semestre_plan: int) -> list:
+    """Lee 06_Rotaciones desde el archivo subido y retorna asignaturas del semestre."""
+    if uploaded_file is None:
+        return []
+    try:
+        content = uploaded_file.getvalue()
+        rot = pd.read_excel(BytesIO(content), sheet_name="06_Rotaciones")
+        col_sem = "Semestre_Plan" if "Semestre_Plan" in rot.columns else rot.columns[0]
+        rot[col_sem] = pd.to_numeric(rot[col_sem], errors="coerce")
+        rot = rot[rot[col_sem] == semestre_plan]
+        if "Asignatura" not in rot.columns:
+            return []
+        asigs = (
+            rot["Asignatura"]
+            .dropna()
+            .astype(str)
+            .str.strip()
+            .replace("", np.nan)
+            .dropna()
+            .unique()
+            .tolist()
+        )
+        return sorted(asigs)
+    except Exception:
+        return []
+
+
+def get_demanda_for_semestre(uploaded_file, semestre_plan: int) -> Optional[int]:
+    """Lee 07_Demanda_Semestres y retorna Demanda_Estudiantes para el semestre dado."""
+    if uploaded_file is None:
+        return None
+    try:
+        content = uploaded_file.getvalue()
+        df = pd.read_excel(BytesIO(content), sheet_name="07_Demanda_Semestres")
+        if "Semestre_Plan" not in df.columns or "Demanda_Estudiantes" not in df.columns:
+            return None
+        df["Semestre_Plan"] = pd.to_numeric(df["Semestre_Plan"], errors="coerce")
+        row = df[df["Semestre_Plan"] == semestre_plan]
+        if row.empty:
+            return None
+        val = row["Demanda_Estudiantes"].iloc[0]
+        return int(val) if pd.notna(val) else None
+    except Exception:
+        return None
+
+
 def preview_capacidad(uploaded_file) -> int:
     """Calcula capacidad total estimada desde 02_Oferta_x_Programa."""
     if uploaded_file is None:
@@ -332,6 +378,234 @@ def generar_excel_resultados(results: Dict) -> bytes:
         ws_util.column_dimensions["E"].width = 15
     
     # ============= GUARDAR A BYTES =============
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output.getvalue()
+
+
+def generar_excel_refinado(results: Dict) -> bytes:
+    """Genera Excel profesional multi-semestre con hoja de indicadores de alto impacto visual."""
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+
+    # ---- Paleta corporativa ----
+    COLOR_HEADER    = "0B3D5C"   # azul petróleo
+    COLOR_BANNER    = "12557A"
+    COLOR_ALT_ROW   = "EAF2F8"
+    COLOR_AMARILLO  = "F4C430"   # baja ocupación
+    COLOR_VERDE     = "27AE60"   # óptimo
+    COLOR_ROJO      = "E74C3C"   # alerta
+    COLOR_AMAR_BG   = "FDF2CC"
+    COLOR_VERDE_BG  = "D5F0E0"
+    COLOR_ROJO_BG   = "FAD7D2"
+    COLOR_TRACK     = "ECF0F1"   # fondo de la barra
+    WHITE           = "FFFFFF"
+    GREY_TXT        = "5D6D7E"
+
+    header_fill  = PatternFill("solid", fgColor=COLOR_HEADER)
+    header_font  = Font(bold=True, color=WHITE, size=11)
+    alt_fill     = PatternFill("solid", fgColor=COLOR_ALT_ROW)
+    center_align = Alignment(horizontal="center", vertical="center", wrap_text=False)
+    left_align   = Alignment(horizontal="left",   vertical="center")
+    border       = Border(
+        left=Side(style="thin", color="D5DBDB"), right=Side(style="thin", color="D5DBDB"),
+        top=Side(style="thin", color="D5DBDB"),  bottom=Side(style="thin", color="D5DBDB"),
+    )
+
+    def write_header(ws, columns, row=1):
+        for ci, name in enumerate(columns, 1):
+            c = ws.cell(row=row, column=ci, value=name)
+            c.fill, c.font, c.border, c.alignment = header_fill, header_font, border, center_align
+        ws.freeze_panes = ws.cell(row=row + 1, column=1)
+
+    def autofit(ws, columns, extra=4, start_row=1):
+        for ci, name in enumerate(columns, 1):
+            max_len = max(len(str(name)), 10)
+            for row in ws.iter_rows(min_row=start_row + 1, min_col=ci, max_col=ci):
+                for cell in row:
+                    if cell.value is not None:
+                        max_len = max(max_len, len(str(cell.value)))
+            ws.column_dimensions[get_column_letter(ci)].width = min(max_len + extra, 55)
+
+    df_asig = results["asignaciones"].copy()
+
+    # ===========================================================
+    # HOJA 1 — ASIGNACIONES
+    # ===========================================================
+    ws_a = wb.active
+    ws_a.title = "Asignaciones"
+
+    display_cols = ["Semestre", "Grupo_ID", "Tamano_Grupo", "Asignatura", "Set", "Rotacion",
+                    "ID_Institucion", "Institucion", "Estudiantes", "Score_IPS"]
+    display_cols = [c for c in display_cols if c in df_asig.columns]
+    df_show = df_asig[display_cols]
+
+    write_header(ws_a, display_cols)
+    for ri, (_, row) in enumerate(df_show.iterrows(), start=2):
+        fill_row = alt_fill if ri % 2 == 0 else None
+        for ci, val in enumerate(row, start=1):
+            cell = ws_a.cell(row=ri, column=ci, value=val)
+            cell.border = border
+            if fill_row:
+                cell.fill = fill_row
+            col_name = display_cols[ci - 1]
+            if col_name in ("Semestre", "Grupo_ID", "Tamano_Grupo", "Estudiantes"):
+                cell.alignment = center_align
+            elif col_name == "Score_IPS" and isinstance(val, (float, np.floating)):
+                cell.value = round(float(val), 4)
+                cell.number_format = "0.0000"
+                cell.alignment = center_align
+            else:
+                cell.alignment = left_align
+    autofit(ws_a, display_cols)
+    if df_show.shape[0] > 0:
+        ws_a.auto_filter.ref = ws_a.dimensions
+
+    # ===========================================================
+    # HOJA 2 — RESUMEN
+    # ===========================================================
+    ws_r = wb.create_sheet("Resumen")
+    por_sem = results.get("por_semestre", {})
+    res_cols = ["Semestre", "Asignaturas", "Sets aplicados", "Estudiantes",
+                "Asignados", "Grupos", "Tamaño grupos", "Calidad (score)"]
+    write_header(ws_r, res_cols)
+    ri = 2
+    for sem in sorted(por_sem.keys()):
+        d = por_sem[sem]
+        sets_aplicados = ", ".join(sorted(set(d["sets"].values())))
+        vals = [
+            sem,
+            ", ".join(d["asignaturas"]),
+            sets_aplicados,
+            d["n_estudiantes"],
+            d["asignados"],
+            d["n_grupos"],
+            f"{d['min_group']}–{d['max_group']}",
+            round(d["obj_value"], 4),
+        ]
+        for ci, val in enumerate(vals, start=1):
+            cell = ws_r.cell(row=ri, column=ci, value=val)
+            cell.border = border
+            cell.alignment = center_align if ci != 2 and ci != 3 else left_align
+            if ri % 2 == 0:
+                cell.fill = alt_fill
+        ri += 1
+    autofit(ws_r, res_cols)
+    if ri > 2:
+        ws_r.auto_filter.ref = f"A1:{get_column_letter(len(res_cols))}{ri - 1}"
+
+    # ===========================================================
+    # HOJA 3 — INDICADORES_DEMANDA_OFERTA  (alto impacto visual)
+    # ===========================================================
+    ws_ind = wb.create_sheet("Indicadores_Demanda_Oferta")
+
+    indicadores = results.get("indicadores", [])
+
+    # --- Banner superior ---
+    ws_ind.merge_cells("A1:H1")
+    banner = ws_ind.cell(row=1, column=1, value="📊  INDICADORES DE DEMANDA vs. OFERTA")
+    banner.fill = PatternFill("solid", fgColor=COLOR_BANNER)
+    banner.font = Font(bold=True, color=WHITE, size=16)
+    banner.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws_ind.row_dimensions[1].height = 34
+
+    ws_ind.merge_cells("A2:H2")
+    sub = ws_ind.cell(
+        row=2, column=1,
+        value="Oferta de referencia = 75 estudiantes  ·  🟡 Baja (<30%)   🟢 Óptimo (30–80%)   🔴 Alta (>80%)",
+    )
+    sub.font = Font(italic=True, color=GREY_TXT, size=10)
+    sub.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+    ws_ind.row_dimensions[2].height = 20
+
+    # --- Encabezados (fila 4) ---
+    BAR_SEGMENTS = 20  # nº de celdas que forman la barra visual
+    header_row = 4
+    ind_cols = ["Semestre", "Asignatura", "Set", "Demanda",
+                "Oferta\nMáxima", "Ocupación\n(Dem/Oferta)", "Estado", "Interpretación"]
+    # La barra ocupará columnas a la derecha (I en adelante)
+    for ci, name in enumerate(ind_cols, 1):
+        c = ws_ind.cell(row=header_row, column=ci, value=name)
+        c.fill, c.font, c.border = header_fill, header_font, border
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    # Encabezado de la barra
+    bar_start_col = len(ind_cols) + 1
+    ws_ind.merge_cells(
+        start_row=header_row, start_column=bar_start_col,
+        end_row=header_row, end_column=bar_start_col + BAR_SEGMENTS - 1,
+    )
+    cbar = ws_ind.cell(row=header_row, column=bar_start_col, value="Indicador visual (0% ─────► 100%)")
+    cbar.fill, cbar.font = header_fill, header_font
+    cbar.alignment = Alignment(horizontal="center", vertical="center")
+    ws_ind.row_dimensions[header_row].height = 30
+
+    def estado_de(pct):
+        if pct < 0.30:
+            return "🟡 Baja ocupación", "Subutilización — hay holgura de oferta", COLOR_AMARILLO, COLOR_AMAR_BG
+        if pct <= 0.80:
+            return "🟢 Óptimo", "Ocupación en el rango ideal", COLOR_VERDE, COLOR_VERDE_BG
+        return "🔴 Alta / Alerta", "Demanda supera el 80% de la oferta", COLOR_ROJO, COLOR_ROJO_BG
+
+    ri = header_row + 1
+    for ind in indicadores:
+        pct = float(ind["Pct_Demanda_Oferta"])
+        estado, interp, color_bar, color_bg = estado_de(pct)
+
+        vals = [
+            ind["Semestre"], ind["Asignatura"], ind["Set"],
+            ind["Demanda"], ind["Oferta_Maxima"], pct, estado, interp,
+        ]
+        for ci, val in enumerate(vals, start=1):
+            cell = ws_ind.cell(row=ri, column=ci, value=val)
+            cell.border = border
+            col_name = ind_cols[ci - 1]
+            if col_name.startswith("Ocupación"):
+                cell.number_format = "0.0%"
+                cell.alignment = center_align
+                cell.font = Font(bold=True, color=color_bar)
+                cell.fill = PatternFill("solid", fgColor=color_bg)
+            elif col_name == "Estado":
+                cell.alignment = center_align
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill("solid", fgColor=color_bg)
+            elif col_name in ("Demanda", "Oferta\nMáxima", "Semestre"):
+                cell.alignment = center_align
+            else:
+                cell.alignment = left_align
+
+        # --- Barra visual con celdas coloreadas (data-bar manual) ---
+        filled = int(round(min(pct, 1.0) * BAR_SEGMENTS))
+        for seg in range(BAR_SEGMENTS):
+            bc = ws_ind.cell(row=ri, column=bar_start_col + seg)
+            if seg < filled:
+                bc.fill = PatternFill("solid", fgColor=color_bar)
+            else:
+                bc.fill = PatternFill("solid", fgColor=COLOR_TRACK)
+            bc.border = Border(top=Side(style="thin", color=WHITE), bottom=Side(style="thin", color=WHITE))
+        # Etiqueta % al final de la barra
+        lbl = ws_ind.cell(row=ri, column=bar_start_col + BAR_SEGMENTS, value=f"{pct*100:.0f}%")
+        lbl.font = Font(bold=True, color=color_bar, size=10)
+        lbl.alignment = Alignment(horizontal="left", vertical="center", indent=1)
+
+        ws_ind.row_dimensions[ri].height = 22
+        ri += 1
+
+    # Anchos
+    anchos_ind = {1: 11, 2: 30, 3: 24, 4: 11, 5: 11, 6: 15, 7: 18, 8: 38}
+    for ci, w in anchos_ind.items():
+        ws_ind.column_dimensions[get_column_letter(ci)].width = w
+    for seg in range(BAR_SEGMENTS):
+        ws_ind.column_dimensions[get_column_letter(bar_start_col + seg)].width = 2.6
+    ws_ind.column_dimensions[get_column_letter(bar_start_col + BAR_SEGMENTS)].width = 7
+    ws_ind.freeze_panes = ws_ind.cell(row=header_row + 1, column=1)
+    if ri > header_row + 1:
+        ws_ind.auto_filter.ref = f"A{header_row}:H{ri - 1}"
+
+    # ===========================================================
+    # GUARDAR
+    # ===========================================================
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -857,216 +1131,12 @@ def procesar_datos(
         return None
 
 
-def procesar_refinado(
-    loader: DataLoader,
-    semestre_plan: int,
-    n_estudiantes: int,
-    set_id: str,
-    semestre_vigencia: str,
-) -> Optional[Dict]:
-    try:
-        loader.validate_pesas()
-        weights, crit_type = loader.get_ponderaciones_dict()
+def _prepare_score_matrix(loader: DataLoader) -> pd.DataFrame:
+    """Construye la matriz de criterios normalizados S (indexada por ID_Institucion str).
 
-        pesos_activos = sum(float(v) for v in weights.values())
-        if abs(pesos_activos - 1.0) > 1e-6:
-            raise ValueError(
-                f"Los pesos activos del set seleccionado deben sumar 1.0; suma actual={pesos_activos:.6f}"
-            )
-
-        weights_norm = {}
-        for k, w in weights.items():
-            key = clean_criterio_codigo(k)
-            weights_norm[key] = weights_norm.get(key, 0.0) + float(w)
-
-        cap_dict = loader.get_rotaciones_dict(semestre_plan)
-        ar_dict = loader.get_asignaturas_rotaciones(semestre_plan)
-
-        constraints = get_group_constraints(semestre_plan)
-        min_g = constraints["min"]
-        max_g = constraints["max"]
-
-        if n_estudiantes < min_g:
-            st.error(f"Se necesitan al menos {min_g} estudiantes para formar un grupo.")
-            return None
-
-        base_raw = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
-        base = pd.DataFrame({"ID_Institucion": base_raw["ID_Institucion"]})
-
-        rename_map = {
-            "Acceso_Transporte_Publico (1-5)": "Acceso_Transporte_Publico",
-            "MisionVisionProposito_AlineacionDocencia (1-5)": "MisionVisionProposito_AlineacionDocencia",
-            "Evalua_Estudiantes_Profesores (0-5)": "Evalua_Estudiantes_Profesores",
-            "Vinculacion_Planta_Especialistas_%": "Vinculacion_Planta_Especialistas_%",
-            "Servicios_UCI (0/1)": "Servicios_UCI",
-            "Servicios_UCIN (0/1)": "Servicios_UCIN",
-            "Servicios_Pediatricos (0/1)": "Servicios_Pediatricos",
-            "Servicios_Obstetricia (0/1)": "Servicios_Obstetricia",
-            "Nro_Universidades_Comparten": "Nro_Universidades_Comparten",
-        }
-        for raw_col, norm_col in rename_map.items():
-            if raw_col in base_raw.columns:
-                base[norm_col] = base_raw[raw_col]
-
-        S = ScoreCalculator.normalize_criteria(base)
-        s_ids = S.index.astype(str)
-
-        oferta_idx = loader.oferta.copy()
-        oferta_idx["ID_Institucion"] = oferta_idx["ID_Institucion"].astype(str)
-        oferta_idx = oferta_idx.set_index("ID_Institucion")
-
-        calidad_idx = loader.calidad.copy()
-        calidad_idx["ID_Institucion"] = calidad_idx["ID_Institucion"].astype(str)
-        calidad_idx = calidad_idx.set_index("ID_Institucion")
-
-        if "Es_Hospital_Universitario" in loader.oferta.columns:
-            hosp_uni = oferta_idx["Es_Hospital_Universitario"].reindex(s_ids, fill_value=0)
-            S["Es_Hospital_Universitario_norm"] = hosp_uni.apply(to_bool01).values
-
-        if "Escenario_Avalado_Practicas" in loader.oferta.columns:
-            esc = oferta_idx["Escenario_Avalado_Practicas"].reindex(s_ids, fill_value=0)
-            S["Escenario_Avalado_Practicas_norm"] = esc.apply(to_bool01).values
-
-        if "Servicios_UCI_UCIN (0/1)" in base_raw.columns:
-            combo = base.set_index("ID_Institucion")["Servicios_UCI_UCIN (0/1)"].reindex(s_ids, fill_value=0)
-            S["Servicios_UCI_UCIN_norm"] = combo.apply(to_bool01).astype(float).values
-        elif "Servicios_UCI" in base.columns or "Servicios_UCIN" in base.columns:
-            uci = base.set_index("ID_Institucion").get("Servicios_UCI", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
-            ucin = base.set_index("ID_Institucion").get("Servicios_UCIN", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
-            S["Servicios_UCI_UCIN_norm"] = np.maximum(
-                uci.apply(to_bool01).astype(float),
-                ucin.apply(to_bool01).astype(float),
-            )
-
-        if "Admiten_Docentes_Externos (Sí/No)" in loader.calidad.columns:
-            adm = calidad_idx["Admiten_Docentes_Externos (Sí/No)"].reindex(s_ids, fill_value="No")
-            adm_num = adm.astype(str).str.strip().str.lower().map({"sí": 1, "si": 1, "yes": 1, "1": 1, "true": 1}).fillna(0)
-            S["Admiten_Docentes_Externos_norm"] = adm_num.values
-
-        for col_raw, col_norm in [
-            ("Areas_Bienestar (0/1)", "Areas_Bienestar_norm"),
-            ("Areas_Academicas (0/1)", "Areas_Academicas_norm"),
-        ]:
-            if col_raw in loader.calidad.columns:
-                col_s = calidad_idx[col_raw].reindex(s_ids, fill_value=0)
-                S[col_norm] = pd.to_numeric(col_s, errors="coerce").fillna(0).clip(0, 1).values
-
-        loader.costos = loader.costos.copy()
-        loader.costos["Cobro_EPP_num"] = loader.costos[
-            "Cobro_EPP (No cobra/Cobra a la Universidad)"
-        ].map({"No cobra EPP": 0, "Cobra EPP a la Universidad": 1}).fillna(0)
-        loader.costos["pct_contra"] = pd.to_numeric(
-            loader.costos["%_Contraprestacion_Matricula (0-100)"], errors="coerce"
-        )
-        if "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)" in loader.costos.columns:
-            loader.costos["EPP_Exigidos_num"] = loader.costos[
-                "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)"
-            ].apply(map_epp_exigidos)
-
-        all_ips_in_rotaciones = set()
-        for (a, r, j) in cap_dict:
-            all_ips_in_rotaciones.add(j)
-
-        st.write(f"✓ {len(all_ips_in_rotaciones)} IPS únicas en rotaciones")
-        st.write(f"✓ {len(s_ids)} IPS en datos normalizados")
-
-        scores = {}
-        for j in all_ips_in_rotaciones:
-            if j not in s_ids:
-                scores[j] = 0.0
-                continue
-
-            score = 0.0
-            for k, w in weights_norm.items():
-                if w <= 0:
-                    continue
-                if k == "%_Contraprestacion_Matricula":
-                    c = loader.costos.copy()
-                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    if len(df_c) > 0:
-                        pct = df_c["pct_contra"].iloc[0]
-                        sk = 1.0 - float(pct) / 100.0 if pd.notna(pct) else 0.5
-                    else:
-                        sk = 0.5
-                elif k == "Cobro_EPP":
-                    c = loader.costos.copy()
-                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    if len(df_c) > 0:
-                        sk = 1.0 - float(df_c["Cobro_EPP_num"].iloc[0])
-                    else:
-                        sk = 1.0
-                elif k == "EPP_Exigidos":
-                    c = loader.costos.copy()
-                    c["ID_Institucion"] = c["ID_Institucion"].astype(str)
-                    df_c = c[c["ID_Institucion"] == j]
-                    if len(df_c) > 0 and "EPP_Exigidos_num" in df_c.columns:
-                        val = df_c["EPP_Exigidos_num"].iloc[0]
-                        sk = 1.0 - float(val) if pd.notna(val) else 0.5
-                    else:
-                        sk = 0.5
-                elif k == "Admiten_Docentes_Externos":
-                    sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
-                else:
-                    col = f"{k}_norm"
-                    sk = S.loc[j, col] if col in S.columns else 0.0
-                    if pd.isna(sk):
-                        sk = 0.0
-                score += w * float(sk)
-            scores[j] = round(score, 4)
-
-        st.write(f"✓ Scores calculados para {len(scores)} IPS")
-        st.write(f"  Score promedio: {sum(scores.values())/len(scores):.4f}" if scores else "  Sin scores")
-
-        optimizer = GroupOptimizer(verbose=False)
-        results_df = optimizer.optimize(
-            scores=scores,
-            cap_dict=cap_dict,
-            asignaturas_rotaciones=ar_dict,
-            n_estudiantes=n_estudiantes,
-            min_group=min_g,
-            max_group=max_g,
-        )
-
-        if not results_df.empty and "Institucion" in loader.oferta.columns:
-            oferta_names = loader.oferta[["ID_Institucion", "Institucion"]].copy()
-            oferta_names["ID_Institucion"] = oferta_names["ID_Institucion"].astype(str)
-            results_df["ID_Institucion"] = results_df["ID_Institucion"].astype(str)
-            results_df = results_df.merge(oferta_names, on="ID_Institucion", how="left")
-
-        groups_summary = optimizer.get_groups_summary()
-        total_asignado = results_df["Estudiantes"].sum() if not results_df.empty else 0
-
-        return {
-            "asignaciones": results_df,
-            "grupos": groups_summary,
-            "total_estudiantes": n_estudiantes,
-            "total_asignado": int(total_asignado),
-            "n_grupos": len(groups_summary),
-            "min_group": min_g,
-            "max_group": max_g,
-            "semestre_plan": semestre_plan,
-            "asignaturas": list(ar_dict.keys()),
-            "obj_value": optimizer.get_objective_value(),
-            "scores": scores,
-        }
-
-    except Exception as e:
-        logger.error(f"Error procesando refinado: {e}")
-        st.error(f"❌ Error: {str(e)}")
-        return None
-
-
-def _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type):
-    """Calcula scores por IPS usando los criterios y pesos activos."""
-    import numpy as np
-
-    weights_norm = {}
-    for k, w in weights.items():
-        key = clean_criterio_codigo(k)
-        weights_norm[key] = weights_norm.get(key, 0.0) + float(w)
-
+    Centraliza toda la lógica de renombrado/normalización de criterios que antes
+    estaba duplicada. También prepara columnas auxiliares en loader.costos.
+    """
     base_raw = loader.oferta.merge(loader.calidad, on="ID_Institucion", how="left", suffixes=("", "_cal"))
     base = pd.DataFrame({"ID_Institucion": base_raw["ID_Institucion"]})
 
@@ -1102,6 +1172,17 @@ def _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type):
     if "Escenario_Avalado_Practicas" in loader.oferta.columns:
         S["Escenario_Avalado_Practicas_norm"] = oferta_idx["Escenario_Avalado_Practicas"].reindex(s_ids, fill_value=0).apply(to_bool01).values
 
+    if "Servicios_UCI_UCIN (0/1)" in base_raw.columns:
+        combo = base.set_index("ID_Institucion")["Servicios_UCI_UCIN (0/1)"].reindex(s_ids, fill_value=0)
+        S["Servicios_UCI_UCIN_norm"] = combo.apply(to_bool01).astype(float).values
+    elif "Servicios_UCI" in base.columns or "Servicios_UCIN" in base.columns:
+        uci = base.set_index("ID_Institucion").get("Servicios_UCI", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+        ucin = base.set_index("ID_Institucion").get("Servicios_UCIN", pd.Series(index=s_ids, data=0)).reindex(s_ids, fill_value=0)
+        S["Servicios_UCI_UCIN_norm"] = np.maximum(
+            uci.apply(to_bool01).astype(float),
+            ucin.apply(to_bool01).astype(float),
+        )
+
     if "Admiten_Docentes_Externos (Sí/No)" in loader.calidad.columns:
         adm = calidad_idx["Admiten_Docentes_Externos (Sí/No)"].reindex(s_ids, fill_value="No")
         adm_num = adm.astype(str).str.strip().str.lower().map({"sí": 1, "si": 1, "yes": 1, "1": 1, "true": 1}).fillna(0)
@@ -1127,7 +1208,249 @@ def _compute_scores(loader, set_id, semestre_vigencia, weights, crit_type):
             "EPP_Exigidos (Sin exigencia/Parcial/Completo + detalle)"
         ].apply(map_epp_exigidos)
 
-    return weights_norm, S, s_ids, loader.costos
+    return S
+
+
+def _weights_norm_for_set(loader: DataLoader, set_id: str) -> dict:
+    """Obtiene y valida los pesos de un set, devolviéndolos limpios y normalizados."""
+    loader.validate_pesas(set_id=set_id)
+    weights, _ = loader.get_ponderaciones_dict(set_id=set_id)
+    pesos_activos = sum(float(v) for v in weights.values())
+    if abs(pesos_activos - 1.0) > 1e-6:
+        raise ValueError(
+            f"Los pesos del set '{set_id}' deben sumar 1.0; suma actual={pesos_activos:.6f}"
+        )
+    weights_norm = {}
+    for k, w in weights.items():
+        key = clean_criterio_codigo(k)
+        weights_norm[key] = weights_norm.get(key, 0.0) + float(w)
+    return weights_norm
+
+
+def _scores_for_set(loader: DataLoader, S: pd.DataFrame, weights_norm: dict, ips_ids: set) -> dict:
+    """Calcula {j: score} para las IPS dadas usando weights_norm sobre la matriz S."""
+    s_ids = S.index.astype(str)
+    costos = loader.costos.copy()
+    costos["ID_Institucion"] = costos["ID_Institucion"].astype(str)
+    costos_by_id = {jid: grp for jid, grp in costos.groupby("ID_Institucion")}
+
+    scores = {}
+    for j in ips_ids:
+        if j not in set(s_ids):
+            scores[j] = 0.0
+            continue
+        df_c = costos_by_id.get(j)
+        score = 0.0
+        for k, w in weights_norm.items():
+            if w <= 0:
+                continue
+            if k == "%_Contraprestacion_Matricula":
+                if df_c is not None and len(df_c) > 0:
+                    pct = df_c["pct_contra"].iloc[0]
+                    sk = 1.0 - float(pct) / 100.0 if pd.notna(pct) else 0.5
+                else:
+                    sk = 0.5
+            elif k == "Cobro_EPP":
+                if df_c is not None and len(df_c) > 0:
+                    sk = 1.0 - float(df_c["Cobro_EPP_num"].iloc[0])
+                else:
+                    sk = 1.0
+            elif k == "EPP_Exigidos":
+                if df_c is not None and len(df_c) > 0 and "EPP_Exigidos_num" in df_c.columns:
+                    val = df_c["EPP_Exigidos_num"].iloc[0]
+                    sk = 1.0 - float(val) if pd.notna(val) else 0.5
+                else:
+                    sk = 0.5
+            elif k == "Admiten_Docentes_Externos":
+                sk = S.loc[j, "Admiten_Docentes_Externos_norm"] if "Admiten_Docentes_Externos_norm" in S.columns else 0.0
+            else:
+                col = f"{k}_norm"
+                sk = S.loc[j, col] if col in S.columns else 0.0
+                if pd.isna(sk):
+                    sk = 0.0
+            score += w * float(sk)
+        scores[j] = round(score, 4)
+    return scores
+
+
+def procesar_refinado(
+    loader: DataLoader,
+    selecciones: list,
+    n_por_semestre: dict,
+    semestre_vigencia: str,
+) -> Optional[Dict]:
+    """Optimización refinada multi-semestre con un set de ponderaciones por asignatura.
+
+    Args:
+        selecciones: lista de dicts {"semestre": int, "asignatura": str, "set_id": str}.
+        n_por_semestre: {semestre: n_estudiantes}.
+    """
+    try:
+        if not selecciones:
+            st.error("❌ No hay asignaturas seleccionadas para optimizar.")
+            return None
+
+        OFERTA_MAXIMA = 75
+
+        # Preparar matriz de criterios una sola vez (común a todos los sets)
+        S = _prepare_score_matrix(loader)
+
+        # Agrupar selecciones por semestre (los estudiantes difieren por semestre)
+        por_sem = {}
+        for sel in selecciones:
+            por_sem.setdefault(int(sel["semestre"]), {})[str(sel["asignatura"])] = str(sel["set_id"])
+
+        # Cache de scores por set para no recomputar
+        scores_cache: Dict[str, dict] = {}
+
+        combined_rows = []
+        por_semestre_detalle = {}
+        indicadores = []
+        scores_aj_global = {}
+        obj_total = 0.0
+
+        oferta_names = None
+        if "Institucion" in loader.oferta.columns:
+            oferta_names = loader.oferta[["ID_Institucion", "Institucion"]].copy()
+            oferta_names["ID_Institucion"] = oferta_names["ID_Institucion"].astype(str)
+
+        for sem in sorted(por_sem.keys()):
+            set_by_asig = por_sem[sem]
+            asigs = sorted(set_by_asig.keys())
+
+            n_estudiantes = int(n_por_semestre.get(sem, 0) or 0)
+            constraints = get_group_constraints(sem)
+            min_g, max_g = constraints["min"], constraints["max"]
+
+            st.markdown(f"**▶ Semestre {sem}** — asignaturas: {asigs} · estudiantes: {n_estudiantes}")
+
+            if n_estudiantes < min_g:
+                st.error(f"Semestre {sem}: se necesitan al menos {min_g} estudiantes para formar un grupo. Omitido.")
+                continue
+
+            cap_dict = loader.get_rotaciones_dict(sem, asigs)
+            ar_dict = loader.get_asignaturas_rotaciones(sem, asigs)
+
+            if not ar_dict:
+                st.warning(f"⚠️ Semestre {sem}: sin rotaciones válidas para las asignaturas seleccionadas. Omitido.")
+                continue
+
+            # Rotaciones sin IPS
+            for asig, rots in ar_dict.items():
+                for rot in rots:
+                    if not any(a == asig and r == rot for (a, r, j) in cap_dict):
+                        st.warning(f"⚠️ Sem {sem} · {asig} / {rot}: sin IPS con cupo disponible.")
+
+            ips_sem = {j for (a, r, j) in cap_dict}
+
+            # Score por (asignatura, IPS) según el set de cada asignatura
+            scores_aj = {}
+            for asig in asigs:
+                sid = set_by_asig[asig]
+                if sid not in scores_cache:
+                    weights_norm = _weights_norm_for_set(loader, sid)
+                    scores_cache[sid] = _scores_for_set(loader, S, weights_norm, ips_sem)
+                else:
+                    # asegurar que cubra estas IPS
+                    faltantes = ips_sem - set(scores_cache[sid].keys())
+                    if faltantes:
+                        weights_norm = _weights_norm_for_set(loader, sid)
+                        scores_cache[sid].update(_scores_for_set(loader, S, weights_norm, faltantes))
+                ips_scores = scores_cache[sid]
+                for j in ips_sem:
+                    scores_aj[(asig, j)] = ips_scores.get(j, 0.0)
+
+            scores_aj_global.update(scores_aj)
+
+            optimizer = GroupOptimizer(verbose=False)
+            res_df = optimizer.optimize(
+                scores=scores_aj,
+                cap_dict=cap_dict,
+                asignaturas_rotaciones=ar_dict,
+                n_estudiantes=n_estudiantes,
+                min_group=min_g,
+                max_group=max_g,
+            )
+
+            if res_df is None or res_df.empty:
+                st.warning(f"⚠️ Semestre {sem}: el optimizador no encontró asignaciones factibles.")
+                continue
+
+            # Enriquecer
+            res_df["Semestre"] = sem
+            res_df["Set"] = res_df["Asignatura"].map(set_by_asig)
+            res_df["ID_Institucion"] = res_df["ID_Institucion"].astype(str)
+            if oferta_names is not None:
+                res_df = res_df.merge(oferta_names, on="ID_Institucion", how="left")
+            # Grupo etiquetado por semestre para que sea único en la salida combinada
+            res_df["Grupo_ID"] = res_df["Grupo"].map(lambda g: f"S{sem}-G{g}")
+
+            combined_rows.append(res_df)
+            obj_total += float(optimizer.get_objective_value() or 0.0)
+
+            n_grupos = res_df["Grupo"].nunique()
+            asignados_sem = int(res_df.groupby("Grupo")["Tamano_Grupo"].first().sum())
+            por_semestre_detalle[sem] = {
+                "n_estudiantes": n_estudiantes,
+                "asignados": asignados_sem,
+                "n_grupos": int(n_grupos),
+                "min_group": min_g,
+                "max_group": max_g,
+                "asignaturas": asigs,
+                "sets": set_by_asig,
+                "obj_value": float(optimizer.get_objective_value() or 0.0),
+            }
+
+            # Indicadores por (semestre, asignatura)
+            for asig in asigs:
+                pct = n_estudiantes / OFERTA_MAXIMA if OFERTA_MAXIMA > 0 else 0.0
+                indicadores.append({
+                    "Semestre": sem,
+                    "Asignatura": asig,
+                    "Set": set_by_asig[asig],
+                    "Demanda": n_estudiantes,
+                    "Asignados": asignados_sem,
+                    "Oferta_Maxima": OFERTA_MAXIMA,
+                    "Pct_Demanda_Oferta": round(pct, 4),
+                })
+
+        if not combined_rows:
+            st.error("❌ No se obtuvieron asignaciones en ningún semestre seleccionado.")
+            return None
+
+        df_all = pd.concat(combined_rows, ignore_index=True)
+
+        total_estudiantes = sum(int(n_por_semestre.get(s, 0) or 0) for s in por_sem.keys())
+        total_asignado = sum(d["asignados"] for d in por_semestre_detalle.values())
+        n_grupos_total = sum(d["n_grupos"] for d in por_semestre_detalle.values())
+
+        # Scores planos por IPS (promedio entre asignaturas) para gráficos avanzados
+        scores_flat = {}
+        tmp = {}
+        for (a, j), v in scores_aj_global.items():
+            tmp.setdefault(j, []).append(v)
+        for j, vals in tmp.items():
+            scores_flat[j] = round(sum(vals) / len(vals), 4)
+
+        return {
+            "modo": "refinado_multi",
+            "asignaciones": df_all,
+            "por_semestre": por_semestre_detalle,
+            "indicadores": indicadores,
+            "total_estudiantes": total_estudiantes,
+            "total_asignado": total_asignado,
+            "n_grupos_total": n_grupos_total,
+            "obj_value": obj_total,
+            "scores": scores_flat,
+            "scores_aj": scores_aj_global,
+            "selecciones": selecciones,
+        }
+
+    except Exception as e:
+        logger.error(f"Error procesando refinado: {e}")
+        st.error(f"❌ Error: {str(e)}")
+        return None
+
 
 
 def _render_heatmap_grupo_ips(df_asig, key_suffix=""):
@@ -1136,8 +1459,9 @@ def _render_heatmap_grupo_ips(df_asig, key_suffix=""):
         return
     if df_asig["Score_IPS"].nunique() <= 1:
         return
+    grupo_col = "Grupo_ID" if "Grupo_ID" in df_asig.columns else "Grupo"
     pivot = df_asig.pivot_table(
-        values="Score_IPS", index="Grupo", columns="Institucion", aggfunc="mean"
+        values="Score_IPS", index=grupo_col, columns="Institucion", aggfunc="mean"
     )
     fig = px.imshow(
         pivot,
@@ -1249,51 +1573,83 @@ def main():
             default_semestre=default_sem,
         )
 
-    semestre_plan = None
-    n_estudiantes_refinado = None
+    selecciones_refinado = []
+    n_por_semestre = {}
 
     if modo == "Refinado por semestre":
-        st.subheader("⚙️ Configuración Refinada")
-        col_r1, col_r2, col_r3 = st.columns(3)
-        with col_r1:
-            semestre_plan = st.selectbox(
-                "Semestre del plan de estudios",
-                options=[5, 6, 7, 8, 9, 10],
-                index=0,
-                key="semestre_plan",
+        st.subheader("⚙️ Configuración Refinada (multi-semestre)")
+        st.caption(
+            "Selecciona una o varias asignaturas de **cualquier semestre**. "
+            "A cada asignatura puedes asignarle un set de ponderaciones distinto."
+        )
+
+        sem_set_map = {
+            5: "SET-SEM5-SaludPublica",
+            6: "SET-SEM6-Psiquiatria",
+            7: "SET-SEM7-MedicinaInterna",
+            8: "SET-SEM8-Pediatria",
+            9: "SET-SEM9-Gineco",
+            10: "SET-SEM10-Cirugia",
+        }
+
+        # Construir catálogo de todas las (semestre, asignatura) disponibles
+        opciones_labels = []
+        label_to_pair = {}
+        for sem in [5, 6, 7, 8, 9, 10]:
+            for asig in get_asignaturas_for_semestre(uploaded_file, sem):
+                label = f"Sem {sem} · {asig}"
+                opciones_labels.append(label)
+                label_to_pair[label] = (sem, asig)
+
+        if not opciones_labels:
+            st.warning("⚠️ No se encontraron asignaturas en 06_Rotaciones. Verifica el archivo.")
+        else:
+            seleccion_labels = st.multiselect(
+                "Asignaturas a optimizar",
+                options=opciones_labels,
+                default=[],
+                help="Puedes mezclar asignaturas de distintos semestres en una misma corrida.",
+                key="seleccion_asignaturas_multi",
             )
-        with col_r2:
-            constraints = get_group_constraints(semestre_plan)
-            n_estudiantes_refinado = st.number_input(
-                f"Estudiantes en semestre {semestre_plan}",
-                min_value=constraints["min"],
-                max_value=75,
-                value=60,
-                step=1,
-                help=f"Grupos de {constraints['min']} a {constraints['max']} estudiantes. Techo: 75.",
-                key="n_estudiantes_refinado",
-            )
-        with col_r3:
-            sem_set_map = {
-                5: "SET-SEM5-SaludPublica",
-                6: "SET-SEM6-Psiquiatria",
-                7: "SET-SEM7-MedicinaInterna",
-                8: "SET-SEM8-Pediatria",
-                9: "SET-SEM9-Gineco",
-                10: "SET-SEM10-Cirugia",
-            }
-            default_sem_set = sem_set_map.get(semestre_plan, "SET-MEDICINA")
-            if default_sem_set not in set_options and set_options:
-                default_sem_set = set_options[0]
-            idx_default = set_options.index(default_sem_set) if default_sem_set in set_options else 0
-            set_id_refinado = st.selectbox(
-                f"Set de ponderaciones para Sem {semestre_plan}",
-                options=set_options,
-                index=idx_default,
-                key="set_id_refinado",
-                help="Auto-selecciona el set recomendado para el semestre, pero puedes cambiarlo para comparar.",
-            )
-        st.caption(f"📏 Restricción de grupos: {constraints['min']}-{constraints['max']} estudiantes por grupo")
+
+            if not seleccion_labels:
+                st.info("ℹ️ Selecciona al menos una asignatura para continuar.")
+            else:
+                st.markdown("##### 🎛️ Set de ponderaciones por asignatura")
+                for label in seleccion_labels:
+                    sem, asig = label_to_pair[label]
+                    c1, c2 = st.columns([3, 2])
+                    c1.markdown(f"**Sem {sem}** · {asig}")
+                    default_set = sem_set_map.get(sem, "SET-MEDICINA")
+                    if default_set not in set_options and set_options:
+                        default_set = set_options[0]
+                    idx_default = set_options.index(default_set) if default_set in set_options else 0
+                    set_sel = c2.selectbox(
+                        "Set",
+                        options=set_options,
+                        index=idx_default,
+                        key=f"set_{sem}_{asig}",
+                        label_visibility="collapsed",
+                    )
+                    selecciones_refinado.append(
+                        {"semestre": sem, "asignatura": asig, "set_id": set_sel}
+                    )
+
+                # Demanda por semestre (default desde 07_Demanda_Semestres)
+                st.markdown("##### 👥 Estudiantes por semestre")
+                semestres_usados = sorted({s["semestre"] for s in selecciones_refinado})
+                cols_dem = st.columns(min(len(semestres_usados), 4) or 1)
+                for i, sem in enumerate(semestres_usados):
+                    constraints = get_group_constraints(sem)
+                    demanda_default = get_demanda_for_semestre(uploaded_file, sem) or 60
+                    with cols_dem[i % len(cols_dem)]:
+                        n_por_semestre[sem] = st.number_input(
+                            f"Sem {sem} (grupos {constraints['min']}-{constraints['max']})",
+                            min_value=constraints["min"],
+                            value=int(demanda_default),
+                            step=1,
+                            key=f"n_estudiantes_sem_{sem}",
+                        )
 
     else:
         capacidad_total = preview_capacidad(uploaded_file)
@@ -1309,14 +1665,26 @@ def main():
         else:
             st.success("✅ La capacidad total alcanza para la demanda indicada (a nivel agregado).")
 
-    if st.button("🚀 Ejecutar Optimización", use_container_width=True, type="primary"):
+    # Bloquear ejecución en modo refinado si no hay asignaturas seleccionadas
+    _puede_ejecutar = True
+    if modo == "Refinado por semestre" and not selecciones_refinado:
+        _puede_ejecutar = False
+
+    if st.button(
+        "🚀 Ejecutar Optimización",
+        use_container_width=True,
+        type="primary",
+        disabled=not _puede_ejecutar,
+    ):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
             tmp.write(uploaded_file.getbuffer())
             tmp_path = tmp.name
 
         try:
             with st.spinner("⏳ Procesando..."):
-                set_id_to_use = set_id_refinado if modo == "Refinado por semestre" else set_id
+                set_id_to_use = set_id if modo != "Refinado por semestre" else (
+                    selecciones_refinado[0]["set_id"] if selecciones_refinado else set_id
+                )
                 loader = DataLoader(tmp_path, set_id_to_use, semestre)
                 loader.load_all()
                 st.session_state.loader = loader
@@ -1327,8 +1695,10 @@ def main():
                         st.session_state.results = None
                     else:
                         st.session_state.results = procesar_refinado(
-                            loader, semestre_plan, int(n_estudiantes_refinado),
-                            set_id_to_use, semestre,
+                            loader,
+                            selecciones_refinado,
+                            n_por_semestre,
+                            semestre,
                         )
                         st.session_state.modo_resultado = "refinado"
                 else:
@@ -1355,105 +1725,90 @@ def main():
         modo_res = st.session_state.get("modo_resultado", "agregado")
 
         if modo_res == "refinado":
-            st.header("📊 Resultados — Modelo Refinado")
-
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("Semestre", results["semestre_plan"])
-            col2.metric("Estudiantes", results["total_estudiantes"])
-            col3.metric("Grupos formados", results["n_grupos"])
-            col4.metric("Asignaturas", len(results["asignaturas"]))
+            st.header("📊 Resultados — Modelo Refinado (multi-semestre)")
 
             df_asig = results["asignaciones"]
-            if not df_asig.empty:
-                scores_dict = results.get("scores", {})
-                if scores_dict:
-                    scores_used = [
-                        s for j, s in scores_dict.items()
-                        if j in df_asig["ID_Institucion"].astype(str).values
-                    ]
-                    if scores_used:
-                        avg_score = sum(scores_used) / len(scores_used)
-                        max_score_ips = max(scores_dict.values())
-                        best_ips_id = max(scores_dict, key=scores_dict.get)
-                        best_ips_name = df_asig[df_asig["ID_Institucion"].astype(str) == best_ips_id]["Institucion"].iloc[0] if not df_asig[df_asig["ID_Institucion"].astype(str) == best_ips_id].empty else best_ips_id
-                        total_est_asig = df_asig["Estudiantes"].sum()
+            por_sem = results.get("por_semestre", {})
 
-                        st.subheader("📌 Resumen Ejecutivo")
-                        col_r1, col_r2, col_r3, col_r4 = st.columns(4)
-                        col_r1.metric("Score promedio", f"{avg_score:.4f}")
-                        col_r2.metric("Mejor IPS", f"{scores_dict[best_ips_id]:.4f}", help=best_ips_name[:40])
-                        col_r3.metric("Estudiantes asignados", int(total_est_asig))
-                        col_r4.metric("IPS utilizadas", df_asig["ID_Institucion"].nunique())
+            # KPIs globales
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Semestres", len(por_sem))
+            col2.metric("Asignaturas", len({(d["asignaturas"]) and a for s, d in por_sem.items() for a in d["asignaturas"]}))
+            col3.metric("Estudiantes", results["total_estudiantes"])
+            col4.metric("Grupos formados", results["n_grupos_total"])
 
-            st.subheader("👥 Grupos formados")
-            st.dataframe(results["grupos"], use_container_width=True, hide_index=True)
+            # Descarga (Excel completo)
+            excel_refinado_bytes = generar_excel_refinado(results)
+            st.download_button(
+                label="📥 Descargar Excel completo (Asignaciones + Indicadores)",
+                data=excel_refinado_bytes,
+                file_name="asignaciones_refinado_multisemestre.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_asignaciones_refinado",
+            )
 
-            st.subheader("📋 Asignaciones por grupo, asignatura y rotación")
-            if not df_asig.empty:
-                display_cols = ["Grupo", "Tamano_Grupo", "Asignatura", "Rotacion", "ID_Institucion", "Institucion", "Estudiantes", "Score_IPS"]
-                display_cols = [c for c in display_cols if c in df_asig.columns]
-                st.dataframe(df_asig[display_cols], use_container_width=True, hide_index=True)
-
-                _buf = BytesIO()
-                with pd.ExcelWriter(_buf, engine="openpyxl") as _writer:
-                    df_asig[display_cols].to_excel(_writer, index=False, sheet_name="Asignaciones")
-                st.download_button(
-                    label="📥 Descargar en Excel",
-                    data=_buf.getvalue(),
-                    file_name="asignaciones_grupo_asignatura_rotacion.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key="download_asignaciones_grupo"
+            # Indicadores demanda/oferta (vista rápida)
+            indic = results.get("indicadores", [])
+            if indic:
+                st.subheader("📊 Indicadores Demanda / Oferta")
+                df_ind = pd.DataFrame(indic)
+                df_ind["Ocupación"] = (df_ind["Pct_Demanda_Oferta"] * 100).round(1)
+                def _estado(p):
+                    if p < 30: return "🟡 Baja"
+                    if p <= 80: return "🟢 Óptimo"
+                    return "🔴 Alta"
+                df_ind["Estado"] = df_ind["Ocupación"].apply(_estado)
+                st.dataframe(
+                    df_ind[["Semestre", "Asignatura", "Set", "Demanda", "Oferta_Maxima", "Ocupación", "Estado"]],
+                    use_container_width=True, hide_index=True,
+                    column_config={
+                        "Ocupación": st.column_config.ProgressColumn(
+                            "Ocupación (Dem/Oferta)", format="%.1f%%", min_value=0, max_value=100,
+                        ),
+                    },
                 )
 
-                st.subheader("📊 Distribución por Asignatura")
-                import plotly.express as px
-                cols_dist = 1
-                asignaturas_list = list(results["asignaturas"])
-                if len(asignaturas_list) > 1:
-                    cols_dist = 2
-                rows = (len(asignaturas_list) + cols_dist - 1) // cols_dist
-                idx = 0
-                for _ in range(rows):
-                    cols = st.columns(cols_dist)
-                    for c in cols:
-                        if idx < len(asignaturas_list):
-                            asig = asignaturas_list[idx]
-                            df_a = df_asig[df_asig["Asignatura"] == asig]
-                            if not df_a.empty:
-                                label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
-                                if "Cirugía" in asig or "Especialidades Quirúrgicas" in asig or "Quirúrgicas" in asig:
-                                    ips_order = (
-                                        df_a.groupby(label_col)["Score_IPS"]
-                                        .first()
-                                        .sort_values(ascending=False)
-                                        .index
-                                        .tolist()
-                                    )
-                                    df_a = df_a.copy()
-                                    df_a[label_col] = pd.Categorical(df_a[label_col], categories=ips_order, ordered=True)
-                                    df_a = df_a.sort_values(label_col)
-                                with c:
-                                    fig = px.bar(
-                                        df_a,
-                                        x=label_col,
-                                        y="Estudiantes",
-                                        color="Grupo",
-                                        barmode="stack",
-                                        title=f"📊 {asig}",
-                                    )
-                                    fig.update_xaxes(
-                                        tickangle=45,
-                                        categoryorder="array",
-                                        categoryarray=df_a[label_col].cat.categories.tolist() if hasattr(df_a[label_col], "cat") else None,
-                                    )
-                                    st.plotly_chart(fig, use_container_width=True, key=f"dist_{asig}")
-                            idx += 1
-                        else:
-                            break
+            import plotly.express as px
 
-                st.subheader("📈 Análisis Avanzado")
-                _render_heatmap_grupo_ips(df_asig, key_suffix="avanz")
-                _render_quadrant_calidad_costo(df_asig, results, st.session_state.loader, key_suffix="avanz")
+            # Detalle por semestre (organizado en pestañas)
+            if por_sem:
+                st.subheader("🗂️ Detalle por semestre")
+                tabs = st.tabs([f"Semestre {s}" for s in sorted(por_sem.keys())])
+                for tab, sem in zip(tabs, sorted(por_sem.keys())):
+                    with tab:
+                        d = por_sem[sem]
+                        df_s = df_asig[df_asig["Semestre"] == sem].copy()
+
+                        cA, cB, cC, cD = st.columns(4)
+                        cA.metric("Estudiantes", d["n_estudiantes"])
+                        cB.metric("Asignados", d["asignados"])
+                        cC.metric("Grupos", d["n_grupos"])
+                        cD.metric("Asignaturas", len(d["asignaturas"]))
+
+                        display_cols = ["Grupo_ID", "Tamano_Grupo", "Asignatura", "Set", "Rotacion",
+                                        "ID_Institucion", "Institucion", "Estudiantes", "Score_IPS"]
+                        display_cols = [c for c in display_cols if c in df_s.columns]
+                        st.dataframe(df_s[display_cols], use_container_width=True, hide_index=True)
+
+                        # Distribución por asignatura del semestre
+                        for asig in d["asignaturas"]:
+                            df_a = df_s[df_s["Asignatura"] == asig]
+                            if df_a.empty:
+                                continue
+                            label_col = "Institucion" if "Institucion" in df_a.columns else "ID_Institucion"
+                            fig = px.bar(
+                                df_a, x=label_col, y="Estudiantes", color="Grupo_ID",
+                                barmode="stack", title=f"📊 {asig}",
+                            )
+                            fig.update_xaxes(tickangle=45)
+                            st.plotly_chart(fig, use_container_width=True, key=f"dist_s{sem}_{asig}")
+
+            # Análisis avanzado global
+            if not df_asig.empty:
+                st.subheader("📈 Análisis Avanzado (global)")
+                _key = "multi_" + "_".join(str(s) for s in sorted(por_sem.keys()))
+                _render_heatmap_grupo_ips(df_asig, key_suffix=_key)
+                _render_quadrant_calidad_costo(df_asig, results, st.session_state.loader, key_suffix=_key)
             else:
                 st.warning("No se encontraron asignaciones factibles.")
         else:
