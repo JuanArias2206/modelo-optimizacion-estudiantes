@@ -514,7 +514,7 @@ def generar_excel_refinado(results: Dict) -> bytes:
     ws_ind.merge_cells("A2:H2")
     sub = ws_ind.cell(
         row=2, column=1,
-        value="Oferta de referencia = 75 estudiantes  ·  🟡 Baja (<30%)   🟢 Óptimo (30–80%)   🔴 Alta (>80%)",
+        value="🟡 Subutilización (<50%)   🟢 Óptimo (50–75%)   🟡 Alto (75–100%)   🔴 Alerta (>100%)",
     )
     sub.font = Font(italic=True, color=GREY_TXT, size=10)
     sub.alignment = Alignment(horizontal="left", vertical="center", indent=1)
@@ -542,11 +542,13 @@ def generar_excel_refinado(results: Dict) -> bytes:
     ws_ind.row_dimensions[header_row].height = 30
 
     def estado_de(pct):
-        if pct < 0.30:
-            return "🟡 Baja ocupación", "Subutilización — hay holgura de oferta", COLOR_AMARILLO, COLOR_AMAR_BG
-        if pct <= 0.80:
-            return "🟢 Óptimo", "Ocupación en el rango ideal", COLOR_VERDE, COLOR_VERDE_BG
-        return "🔴 Alta / Alerta", "Demanda supera el 80% de la oferta", COLOR_ROJO, COLOR_ROJO_BG
+        if pct < 0.50:
+            return "🟡 Subutilización", "Ocupación baja — hay holgura de oferta (<50%)", COLOR_AMARILLO, COLOR_AMAR_BG
+        if pct <= 0.75:
+            return "🟢 Óptimo", "Ocupación en el rango ideal (50–75%)", COLOR_VERDE, COLOR_VERDE_BG
+        if pct <= 1.00:
+            return "🟡 Alto", "Demanda cercana a la oferta máxima (75–100%)", COLOR_AMARILLO, COLOR_AMAR_BG
+        return "🔴 Alerta", "Demanda supera la oferta disponible (>100%)", COLOR_ROJO, COLOR_ROJO_BG
 
     ri = header_row + 1
     for ind in indicadores:
@@ -1754,9 +1756,10 @@ def main():
                 df_ind = pd.DataFrame(indic)
                 df_ind["Ocupación"] = (df_ind["Pct_Demanda_Oferta"] * 100).round(1)
                 def _estado(p):
-                    if p < 30: return "🟡 Baja"
-                    if p <= 80: return "🟢 Óptimo"
-                    return "🔴 Alta"
+                    if p < 50: return "🟡 Subutilización"
+                    if p <= 75: return "🟢 Óptimo"
+                    if p <= 100: return "🟡 Alto"
+                    return "🔴 Alerta"
                 df_ind["Estado"] = df_ind["Ocupación"].apply(_estado)
                 st.dataframe(
                     df_ind[["Semestre", "Asignatura", "Set", "Demanda", "Oferta_Maxima", "Ocupación", "Estado"]],
